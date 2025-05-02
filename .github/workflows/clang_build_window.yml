@@ -20,7 +20,7 @@ jobs:
         run: |
           git clone https://github.com/llvm/llvm-project.git
           cd llvm-project
-          git checkout tags/llvmorg-${CLANG_VERSION}
+          git checkout tags/llvmorg-${{ env.CLANG_VERSION }}
 
       - name: Configure CMake
         working-directory: llvm-project
