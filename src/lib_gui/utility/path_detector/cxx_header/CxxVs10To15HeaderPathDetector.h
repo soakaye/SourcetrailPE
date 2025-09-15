@@ -1,10 +1,10 @@
-#ifndef CXX_VS_10_TO_14_HEADER_PATH_DETECTOR_H
-#define CXX_VS_10_TO_14_HEADER_PATH_DETECTOR_H
+#ifndef CXX_VS_10_TO_15_HEADER_PATH_DETECTOR_H
+#define CXX_VS_10_TO_15_HEADER_PATH_DETECTOR_H
 
 #include "Platform.h"
 #include "PathDetector.h"
 
-class CxxVs10To14HeaderPathDetector: public PathDetector
+class CxxVs10To15HeaderPathDetector: public PathDetector
 {
 public:
 	enum VisualStudioType
@@ -15,8 +15,7 @@ public:
 		VISUAL_STUDIO_2015
 	};
 
-	CxxVs10To14HeaderPathDetector(
-		VisualStudioType type, bool isExpress, utility::Platform::Architecture architecture);
+	CxxVs10To15HeaderPathDetector(VisualStudioType type, bool isExpress, utility::Platform::Architecture architecture);
 
 private:
 	static int visualStudioTypeToVersion(const VisualStudioType t);
@@ -31,4 +30,4 @@ private:
 	const utility::Platform::Architecture m_architecture;
 };
 
-#endif	  // CXX_VS_10_TO_14_HEADER_PATH_DETECTOR_H
+#endif

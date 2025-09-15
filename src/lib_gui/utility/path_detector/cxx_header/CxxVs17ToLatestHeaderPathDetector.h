@@ -1,12 +1,12 @@
-#ifndef CXX_VS_15_TO_LATEST_HEADER_PATH_DETECTOR_H
-#define CXX_VS_15_TO_LATEST_HEADER_PATH_DETECTOR_H
+#ifndef CXX_VS_17_TO_LATEST_HEADER_PATH_DETECTOR_H
+#define CXX_VS_17_TO_LATEST_HEADER_PATH_DETECTOR_H
 
 #include "PathDetector.h"
 
-class CxxVs15ToLatestHeaderPathDetector: public PathDetector
+class CxxVs17ToLatestHeaderPathDetector: public PathDetector
 {
 public:
-	CxxVs15ToLatestHeaderPathDetector(const std::string &versionRange);
+	CxxVs17ToLatestHeaderPathDetector(const std::string &versionRange);
 
 private:
 	const std::string m_versionRange;

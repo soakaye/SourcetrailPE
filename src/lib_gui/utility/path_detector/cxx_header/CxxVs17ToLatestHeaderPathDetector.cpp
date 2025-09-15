@@ -1,4 +1,4 @@
-#include "CxxVs15ToLatestHeaderPathDetector.h"
+#include "CxxVs17ToLatestHeaderPathDetector.h"
 
 #include <string>
 
@@ -12,13 +12,13 @@ using namespace std;
 using namespace utility;
 using namespace boost::chrono;
 
-CxxVs15ToLatestHeaderPathDetector::CxxVs15ToLatestHeaderPathDetector(const string &versionRange)
+CxxVs17ToLatestHeaderPathDetector::CxxVs17ToLatestHeaderPathDetector(const string &versionRange)
 	: PathDetector(getVsWhereProperty(versionRange, "displayName"))
 	, m_versionRange(versionRange)
 {
 }
 
-std::vector<FilePath> CxxVs15ToLatestHeaderPathDetector::doGetPaths() const
+std::vector<FilePath> CxxVs17ToLatestHeaderPathDetector::doGetPaths() const
 {
 	std::vector<FilePath> headerSearchPaths;
 
@@ -63,7 +63,7 @@ std::vector<FilePath> CxxVs15ToLatestHeaderPathDetector::doGetPaths() const
 	return headerSearchPaths;
 }
 
-std::string CxxVs15ToLatestHeaderPathDetector::getVsWhereProperty(const std::string &versionRange, const std::string &propertyName)
+std::string CxxVs17ToLatestHeaderPathDetector::getVsWhereProperty(const std::string &versionRange, const std::string &propertyName)
 {
 	std::string propertyValue;
 

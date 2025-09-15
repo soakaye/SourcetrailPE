@@ -387,10 +387,10 @@ if (BUILD_CXX_LANGUAGE_PACKAGE)
 			utility/path_detector/cxx_header/CxxFrameworkPathDetector.h
 			utility/path_detector/cxx_header/CxxHeaderPathDetector.cpp
 			utility/path_detector/cxx_header/CxxHeaderPathDetector.h
-			utility/path_detector/cxx_header/CxxVs10To14HeaderPathDetector.cpp
-			utility/path_detector/cxx_header/CxxVs10To14HeaderPathDetector.h
-			utility/path_detector/cxx_header/CxxVs15ToLatestHeaderPathDetector.cpp
-			utility/path_detector/cxx_header/CxxVs15ToLatestHeaderPathDetector.h
+			utility/path_detector/cxx_header/CxxVs10To15HeaderPathDetector.cpp
+			utility/path_detector/cxx_header/CxxVs10To15HeaderPathDetector.h
+			utility/path_detector/cxx_header/CxxVs17ToLatestHeaderPathDetector.cpp
+			utility/path_detector/cxx_header/CxxVs17ToLatestHeaderPathDetector.h
 			utility/path_detector/cxx_header/utilityCxxHeaderDetection.cpp
 			utility/path_detector/cxx_header/utilityCxxHeaderDetection.h
 	)

@@ -1,4 +1,4 @@
-#include "CxxVs10To14HeaderPathDetector.h"
+#include "CxxVs10To15HeaderPathDetector.h"
 
 #include <string>
 
@@ -13,7 +13,7 @@
 using namespace utility;
 using namespace std::string_literals;
 
-CxxVs10To14HeaderPathDetector::CxxVs10To14HeaderPathDetector(VisualStudioType type, bool isExpress, Platform::Architecture architecture)
+CxxVs10To15HeaderPathDetector::CxxVs10To15HeaderPathDetector(VisualStudioType type, bool isExpress, Platform::Architecture architecture)
 	: PathDetector(visualStudioTypeToString(type) + (isExpress ? " Express" : " ") + Platform::getArchitectureName(architecture))
 	, m_version(visualStudioTypeToVersion(type))
 	, m_isExpress(isExpress)
@@ -21,7 +21,7 @@ CxxVs10To14HeaderPathDetector::CxxVs10To14HeaderPathDetector(VisualStudioType ty
 {
 }
 
-int CxxVs10To14HeaderPathDetector::visualStudioTypeToVersion(const VisualStudioType t)
+int CxxVs10To15HeaderPathDetector::visualStudioTypeToVersion(const VisualStudioType t)
 {
 	switch (t)
 	{
@@ -37,7 +37,7 @@ int CxxVs10To14HeaderPathDetector::visualStudioTypeToVersion(const VisualStudioT
 	return 0;
 }
 
-std::string CxxVs10To14HeaderPathDetector::visualStudioTypeToString(const VisualStudioType t)
+std::string CxxVs10To15HeaderPathDetector::visualStudioTypeToString(const VisualStudioType t)
 {
 	std::string ret = "Visual Studio";
 	switch (t)
@@ -54,7 +54,7 @@ std::string CxxVs10To14HeaderPathDetector::visualStudioTypeToString(const Visual
 	return ret;
 }
 
-std::vector<FilePath> CxxVs10To14HeaderPathDetector::doGetPaths() const
+std::vector<FilePath> CxxVs10To15HeaderPathDetector::doGetPaths() const
 {
 	const FilePath vsInstallPath = getVsInstallPathUsingRegistry();
 
@@ -80,7 +80,7 @@ std::vector<FilePath> CxxVs10To14HeaderPathDetector::doGetPaths() const
 	return headerSearchPaths;
 }
 
-FilePath CxxVs10To14HeaderPathDetector::getVsInstallPathUsingRegistry() const
+FilePath CxxVs10To15HeaderPathDetector::getVsInstallPathUsingRegistry() const
 {
 	QString key = "HKEY_LOCAL_MACHINE\\SOFTWARE\\";
 	if (m_architecture == Platform::Architecture::BITS_32)
@@ -91,8 +91,7 @@ FilePath CxxVs10To14HeaderPathDetector::getVsInstallPathUsingRegistry() const
 	key += (m_isExpress ? QStringLiteral("VCExpress") : QStringLiteral("VisualStudio"));
 	key += "\\" + QString::number(m_version) + ".0";
 
-	QSettings expressKey(
-		key, QSettings::NativeFormat);	  // NativeFormat means from Registry on Windows.
+	QSettings expressKey(key, QSettings::NativeFormat);	  // NativeFormat means from Registry on Windows.
 	QString value = expressKey.value("InstallDir").toString() + "../../";
 
 	FilePath path(value.toStdString());
