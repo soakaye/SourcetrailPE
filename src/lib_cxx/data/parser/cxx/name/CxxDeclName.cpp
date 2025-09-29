@@ -1,9 +1,13 @@
 #include "CxxDeclName.h"
 
-CxxDeclName::CxxDeclName(std::string name): m_name(std::move(name)) {}
+CxxDeclName::CxxDeclName(std::string name)
+	: m_name(std::move(name))
+{
+}
 
 CxxDeclName::CxxDeclName(std::string name, std::vector<std::string> templateParameterNames)
-	: m_name(std::move(name)), m_templateParameterNames(std::move(templateParameterNames))
+	: m_name(std::move(name))
+	, m_templateParameterNames(std::move(templateParameterNames))
 {
 }
 

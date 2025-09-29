@@ -853,12 +853,11 @@ TEST_CASE(
 TEST_CASE("cxx parser finds template argument of dependent non type template parameter")
 {
 	std::shared_ptr<TestStorage> client = parseCode(
-		"template <template<typename> class T1, T1<int>& T2>\n"
+		"template <template<typename> typename T1, T1<int>& T2>\n"
 		"class A\n"
 		"{};\n");
 
-	REQUIRE(utility::containsElement<std::string>(
-		client->typeUses, "A<template<typename> typename T1, T1<int> & T2> -> int <1:43 1:45>"));
+	REQUIRE(containsElement(client->typeUses, "A<template<typename> typename T1, T1<int> & T2> -> int <1:46 1:48>"s));
 }
 
 // void _test_foofoo()
@@ -3420,26 +3419,22 @@ TEST_CASE(
 		client->localSymbols, "input.cc<7:14> <8:14 8:14>"));
 }
 
-TEST_CASE(
-	"cxx parser finds template argument for template template parameter of explicit partial class "
-	"template specialization")
+TEST_CASE("cxx parser finds template argument for template template parameter of explicit partial class template specialization")
 {
 	std::shared_ptr<TestStorage> client = parseCode(
 		"template <typename T>\n"
 		"class A\n"
 		"{};\n"
-		"template <template<typename> class T, template<typename> class U>\n"
+		"template <template<typename> class T, template<typename> typename U>\n"
 		"class B\n"
 		"{};\n"
-		"template <template<typename> class U>\n"
+		"template <template<typename> typename U>\n"
 		"class B<A, U>\n"
 		"{\n"
 		"};\n");
 
-	REQUIRE(utility::containsElement<std::string>(
-		client->typeUses, "B<A, template<typename> typename U> -> A<typename T> <8:9 8:9>"));
-	REQUIRE(utility::containsElement<std::string>(
-		client->localSymbols, "input.cc<7:36> <8:12 8:12>"));
+	REQUIRE(containsElement(client->typeUses, "B<A, template<typename> typename U> -> A<typename T> <8:9 8:9>"s));
+	REQUIRE(containsElement(client->localSymbols, "input.cc<7:39> <8:12 8:12>"s));
 }
 
 TEST_CASE(
@@ -3659,12 +3654,11 @@ TEST_CASE("cxx parser finds template template default argument type of template 
 		"template <typename T>\n"
 		"class A\n"
 		"{};\n"
-		"template <template<typename> class T = A>\n"
+		"template <template<typename> typename T = A>\n"
 		"class B\n"
 		"{};\n");
 
-	REQUIRE(utility::containsElement<std::string>(
-		client->typeUses, "B<template<typename> typename T> -> A<typename T> <4:40 4:40>"));
+	REQUIRE(containsElement(client->typeUses, "B<template<typename> typename T> -> A<typename T> <4:43 4:43>"s));
 }
 
 TEST_CASE("cxx parser finds implicit instantiation of template function")
@@ -3854,14 +3848,12 @@ TEST_CASE("cxx parser finds template template default argument type of template 
 		"template <typename T>\n"
 		"class A\n"
 		"{};\n"
-		"template <template<typename> class T = A>\n"
+		"template <template<typename> typename T = A>\n"
 		"void test()\n"
 		"{\n"
 		"};\n");
 
-	REQUIRE(utility::containsElement<std::string>(
-		client->typeUses,
-		"void test<template<typename> typename T>() -> A<typename T> <4:40 4:40>"));
+	REQUIRE(containsElement(client->typeUses, "void test<template<typename> typename T>() -> A<typename T> <4:43 4:43>"s));
 }
 
 TEST_CASE("cxx parser finds lambda calling a function")

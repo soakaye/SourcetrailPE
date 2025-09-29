@@ -246,9 +246,7 @@ ParseLocation utility::getParseLocation(
 PrintingPolicy utility::makePrintingPolicyForCPlusPlus()
 {
 	PrintingPolicy pp = PrintingPolicy(clang::LangOptions());
-	// PrintingPolicy::adjustForCPlusPlus would set the same flags.
-	pp.SuppressTagKeyword = true; // value "true": for a class A it prints "A" instead of "class A"
-	pp.Bool = true;               // value "true": prints bool type as "bool" instead of "_Bool"
+	pp.adjustForCPlusPlus();
 
 	return pp;
 }

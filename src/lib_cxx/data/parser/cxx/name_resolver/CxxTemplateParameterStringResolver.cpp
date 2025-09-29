@@ -18,8 +18,7 @@ CxxTemplateParameterStringResolver::CxxTemplateParameterStringResolver(const Cxx
 {
 }
 
-std::string CxxTemplateParameterStringResolver::getTemplateParameterString(
-	const clang::NamedDecl* parameter)
+std::string CxxTemplateParameterStringResolver::getTemplateParameterString(const clang::NamedDecl* parameter)
 {
 	std::string templateParameterTypeString;
 
@@ -29,16 +28,13 @@ std::string CxxTemplateParameterStringResolver::getTemplateParameterString(
 		switch (templateParameterKind)
 		{
 		case clang::Decl::NonTypeTemplateParm:
-			templateParameterTypeString = getTemplateParameterTypeString(
-				clang::dyn_cast<clang::NonTypeTemplateParmDecl>(parameter));
+			templateParameterTypeString = getTemplateParameterTypeString(clang::dyn_cast<clang::NonTypeTemplateParmDecl>(parameter));
 			break;
 		case clang::Decl::TemplateTypeParm:
-			templateParameterTypeString = getTemplateParameterTypeString(
-				clang::dyn_cast<clang::TemplateTypeParmDecl>(parameter));
+			templateParameterTypeString = getTemplateParameterTypeString(clang::dyn_cast<clang::TemplateTypeParmDecl>(parameter));
 			break;
 		case clang::Decl::TemplateTemplateParm:
-			templateParameterTypeString = getTemplateParameterTypeString(
-				clang::dyn_cast<clang::TemplateTemplateParmDecl>(parameter));
+			templateParameterTypeString = getTemplateParameterTypeString(clang::dyn_cast<clang::TemplateTemplateParmDecl>(parameter));
 			break;
 		default:
 			// LOG_ERROR("Unhandled kind of template parameter.");
@@ -54,12 +50,9 @@ std::string CxxTemplateParameterStringResolver::getTemplateParameterString(
 	return templateParameterTypeString;
 }
 
-std::string CxxTemplateParameterStringResolver::getTemplateParameterTypeString(
-	const clang::NonTypeTemplateParmDecl* parameter)
+std::string CxxTemplateParameterStringResolver::getTemplateParameterTypeString(const clang::NonTypeTemplateParmDecl* parameter)
 {
-	std::string typeString = CxxTypeName::makeUnsolvedIfNull(
-								  CxxTypeNameResolver(this).getName(parameter->getType()))
-								  ->toString();
+	std::string typeString = CxxTypeName::makeUnsolvedIfNull(CxxTypeNameResolver(this).getName(parameter->getType()))->toString();
 
 	if (parameter->isTemplateParameterPack())
 	{
@@ -69,8 +62,7 @@ std::string CxxTemplateParameterStringResolver::getTemplateParameterTypeString(
 	return typeString;
 }
 
-std::string CxxTemplateParameterStringResolver::getTemplateParameterTypeString(
-	const clang::TemplateTypeParmDecl* parameter)
+std::string CxxTemplateParameterStringResolver::getTemplateParameterTypeString(const clang::TemplateTypeParmDecl *parameter)
 {
 	std::string typeString = (parameter->wasDeclaredWithTypename() ? "typename" : "class");
 
@@ -82,8 +74,7 @@ std::string CxxTemplateParameterStringResolver::getTemplateParameterTypeString(
 	return typeString;
 }
 
-std::string CxxTemplateParameterStringResolver::getTemplateParameterTypeString(
-	const clang::TemplateTemplateParmDecl* parameter)
+std::string CxxTemplateParameterStringResolver::getTemplateParameterTypeString(const clang::TemplateTemplateParmDecl* parameter)
 {
 	std::stringstream ss;
 	ss << "template<";
@@ -100,7 +91,19 @@ std::string CxxTemplateParameterStringResolver::getTemplateParameterTypeString(
 
 		ss << parameterStringResolver.getTemplateParameterString(parameterList->getParam(i));
 	}
-	ss << "> typename";	// TODO: what if template template parameter is defined with class keyword?
+
+#if LLVM_VERSION_MAJOR >= 20
+	if (parameter->wasDeclaredWithTypename())
+	{
+		ss << "> typename";
+	}
+	else
+	{
+		ss << "> class";
+	}
+#else
+	ss << "> typename";
+#endif
 
 	if (parameter->isTemplateParameterPack())
 	{
