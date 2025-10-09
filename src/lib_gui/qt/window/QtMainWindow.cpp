@@ -668,22 +668,22 @@ void QtMainWindow::findOnScreen()
 
 void QtMainWindow::codeReferencePrevious()
 {
-	MessageCodeReference(MessageCodeReference::REFERENCE_PREVIOUS, false).dispatch();
+	MessageCodeReference(MessageCodeReference::Type::PREVIOUS, false).dispatch();
 }
 
 void QtMainWindow::codeReferenceNext()
 {
-	MessageCodeReference(MessageCodeReference::REFERENCE_NEXT, false).dispatch();
+	MessageCodeReference(MessageCodeReference::Type::NEXT, false).dispatch();
 }
 
 void QtMainWindow::codeLocalReferencePrevious()
 {
-	MessageCodeReference(MessageCodeReference::REFERENCE_PREVIOUS, true).dispatch();
+	MessageCodeReference(MessageCodeReference::Type::PREVIOUS, true).dispatch();
 }
 
 void QtMainWindow::codeLocalReferenceNext()
 {
-	MessageCodeReference(MessageCodeReference::REFERENCE_NEXT, true).dispatch();
+	MessageCodeReference(MessageCodeReference::Type::NEXT, true).dispatch();
 }
 
 void QtMainWindow::customTrail()

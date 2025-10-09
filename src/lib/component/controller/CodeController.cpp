@@ -306,7 +306,7 @@ void CodeController::handleMessage(MessageChangeFileView* message)
 
 void CodeController::handleMessage(MessageCodeReference* message)
 {
-	bool next = (message->type == MessageCodeReference::REFERENCE_NEXT);
+	bool next = (message->type == MessageCodeReference::Type::NEXT);
 	bool local = message->localReference;
 
 	if (local)

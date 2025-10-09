@@ -7,13 +7,13 @@
 class MessageCodeReference: public Message<MessageCodeReference>
 {
 public:
-	enum ReferenceType
+	enum class Type
 	{
-		REFERENCE_PREVIOUS,
-		REFERENCE_NEXT
+		PREVIOUS,
+		NEXT
 	};
 
-	MessageCodeReference(ReferenceType type, bool localReference)
+	MessageCodeReference(Type type, bool localReference)
 		: type(type), localReference(localReference)
 	{
 		setSchedulerId(TabIds::currentTab());
@@ -26,7 +26,7 @@ public:
 
 	void print(std::ostream& os) const override
 	{
-		if (type == REFERENCE_PREVIOUS)
+		if (type == Type::PREVIOUS)
 		{
 			os << "previous";
 		}
@@ -41,7 +41,7 @@ public:
 		}
 	}
 
-	const ReferenceType type;
+	const Type type;
 	bool localReference;
 };
 

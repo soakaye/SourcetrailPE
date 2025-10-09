@@ -856,22 +856,22 @@ void QtCodeNavigator::focusChanged(QWidget*  /*from*/, QWidget* to)
 
 void QtCodeNavigator::previousReference()
 {
-	MessageCodeReference(MessageCodeReference::REFERENCE_PREVIOUS, false).dispatch();
+	MessageCodeReference(MessageCodeReference::Type::PREVIOUS, false).dispatch();
 }
 
 void QtCodeNavigator::nextReference()
 {
-	MessageCodeReference(MessageCodeReference::REFERENCE_NEXT, false).dispatch();
+	MessageCodeReference(MessageCodeReference::Type::NEXT, false).dispatch();
 }
 
 void QtCodeNavigator::previousLocalReference()
 {
-	MessageCodeReference(MessageCodeReference::REFERENCE_PREVIOUS, true).dispatch();
+	MessageCodeReference(MessageCodeReference::Type::PREVIOUS, true).dispatch();
 }
 
 void QtCodeNavigator::nextLocalReference()
 {
-	MessageCodeReference(MessageCodeReference::REFERENCE_NEXT, true).dispatch();
+	MessageCodeReference(MessageCodeReference::Type::NEXT, true).dispatch();
 }
 
 void QtCodeNavigator::setModeList()
