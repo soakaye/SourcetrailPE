@@ -2488,8 +2488,8 @@ void GraphController::createLegendGraph()
 
 	x = 0;
 	y = 610;
-	int dx = 200;
-	int dy = 50;
+	constexpr int dx = 200;
+	constexpr int dy = 50;
 
 	// Nodes
 	{
@@ -2516,13 +2516,15 @@ void GraphController::createLegendGraph()
 
 		addNode(NODE_GLOBAL_VARIABLE, "variable", Vec2i(x, y + dy * ++i));
 		y -= 15;
-		addNode(
-			NODE_GLOBAL_VARIABLE, "non-indexed variable", Vec2i(x, y + dy * ++i), DefinitionKind::NONE);
+		addNode(NODE_GLOBAL_VARIABLE, "non-indexed variable", Vec2i(x, y + dy * ++i), DefinitionKind::NONE);
 		y -= 15;
 
 		addNode(NODE_FUNCTION, "function", Vec2i(x, y + dy * ++i));
 		y -= 15;
 		addNode(NODE_FUNCTION, "non-indexed function", Vec2i(x, y + dy * ++i), DefinitionKind::NONE);
+		y -= 15;
+
+		addNode(NODE_CONCEPT, "concept", Vec2i(x, y + dy * ++i));
 		y -= 15;
 
 		Node* typeNode = addNode(NODE_TYPE, "Type with Members", Vec2i(x, y + dy * ++i));
@@ -2653,6 +2655,15 @@ void GraphController::createLegendGraph()
 			Node* function = addNode(NODE_FUNCTION, "function", Vec2i(x, y + dy * ++i));
 			Node* variable = addNode(NODE_GLOBAL_VARIABLE, "variable", Vec2i(x + dx, y + dy * i));
 			addEdge(Edge::EDGE_USAGE, function, variable);
+		}
+
+		{
+			addText("concept use", 0, Vec2i(x, y + dy * ++i));
+			Node *templateName = addNode(NODE_TYPE, "TemplateType<typename ParameterType>", Vec2i(x, y + dy * ++i));
+			Node *templateFunction = addNode(NODE_FUNCTION, "template_function<typename ParameterType>", Vec2i(x, y + dy * ++i));
+			Node *conceptName = addNode(NODE_CONCEPT, "concept", Vec2i(x + dx + dx, y + (dy * i) - (dy / 2)));
+			addEdge(Edge::EDGE_USAGE, templateName, conceptName);
+			addEdge(Edge::EDGE_USAGE, templateFunction, conceptName);
 		}
 
 		{
