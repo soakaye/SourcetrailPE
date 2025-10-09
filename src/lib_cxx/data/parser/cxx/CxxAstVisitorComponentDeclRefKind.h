@@ -68,8 +68,8 @@ private:
 	void saveAll();
 	void restoreAll();
 
-	ReferenceKind m_thisRefKind = REFERENCE_USAGE;
-	ReferenceKind m_childRefKind = REFERENCE_USAGE;
+	ReferenceKind m_thisRefKind = ReferenceKind::USAGE;
+	ReferenceKind m_childRefKind = ReferenceKind::USAGE;
 
 	std::vector<ReferenceKind> m_oldThisRefKinds;
 	std::vector<ReferenceKind> m_oldChildRefKinds;

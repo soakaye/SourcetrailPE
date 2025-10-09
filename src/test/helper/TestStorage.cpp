@@ -354,31 +354,31 @@ std::string TestStorage::edgeTypeToString(Edge::EdgeType edgeType)
 	switch (edgeType)
 	{
 	case Edge::EDGE_TYPE_USAGE:
-		return "REFERENCE_TYPE_USAGE";
+		return "ReferenceKind::TYPE_USAGE";
 	case Edge::EDGE_USAGE:
-		return "REFERENCE_USAGE";
+		return "ReferenceKind::USAGE";
 	case Edge::EDGE_CALL:
-		return "REFERENCE_CALL";
+		return "ReferenceKind::CALL";
 	case Edge::EDGE_INHERITANCE:
-		return "REFERENCE_INHERITANCE";
+		return "ReferenceKind::INHERITANCE";
 	case Edge::EDGE_OVERRIDE:
-		return "REFERENCE_OVERRIDE";
+		return "ReferenceKind::OVERRIDE";
 	case Edge::EDGE_TYPE_ARGUMENT:
-		return "REFERENCE_TYPE_ARGUMENT";
+		return "ReferenceKind::TYPE_ARGUMENT";
 	case Edge::EDGE_TEMPLATE_SPECIALIZATION:
-		return "REFERENCE_TEMPLATE_SPECIALIZATION";
+		return "ReferenceKind::TEMPLATE_SPECIALIZATION";
 	case Edge::EDGE_INCLUDE:
-		return "REFERENCE_INCLUDE";
+		return "ReferenceKind::INCLUDE";
 	case Edge::EDGE_IMPORT:
-		return "REFERENCE_IMPORT";
+		return "ReferenceKind::IMPORT";
 	case Edge::EDGE_MACRO_USAGE:
-		return "REFERENCE_MACRO_USAGE";
+		return "ReferenceKind::MACRO_USAGE";
 	case Edge::EDGE_ANNOTATION_USAGE:
-		return "REFERENCE_ANNOTATION_USAGE";
+		return "ReferenceKind::ANNOTATION_USAGE";
 	default:
 		break;
 	}
-	return "REFERENCE_UNDEFINED";
+	return "ReferenceKind::UNDEFINED";
 }
 
 std::vector<std::string> *TestStorage::getBinForNodeType(NodeKind nodeType)

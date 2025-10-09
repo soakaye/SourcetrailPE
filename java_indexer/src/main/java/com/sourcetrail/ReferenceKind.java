@@ -1,6 +1,7 @@
 package com.sourcetrail;
 
-public enum ReferenceKind {	   // these values need to be the same as ReferenceKind in C++ code
+// These values need to be the same as ReferenceKind in C++ code (see Reference.h)
+public enum ReferenceKind {	   
 	UNDEFINED(0),
 	TYPE_USAGE(1),
 	USAGE(2),

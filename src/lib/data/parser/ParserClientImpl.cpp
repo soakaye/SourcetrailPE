@@ -61,27 +61,27 @@ Edge::EdgeType referenceKindToEdgeType(ReferenceKind referenceKind)
 {
 	switch (referenceKind)
 	{
-		case REFERENCE_TYPE_USAGE:
+		case ReferenceKind::TYPE_USAGE:
 			return Edge::EDGE_TYPE_USAGE;
-		case REFERENCE_USAGE:
+		case ReferenceKind::USAGE:
 			return Edge::EDGE_USAGE;
-		case REFERENCE_CALL:
+		case ReferenceKind::CALL:
 			return Edge::EDGE_CALL;
-		case REFERENCE_INHERITANCE:
+		case ReferenceKind::INHERITANCE:
 			return Edge::EDGE_INHERITANCE;
-		case REFERENCE_OVERRIDE:
+		case ReferenceKind::OVERRIDE:
 			return Edge::EDGE_OVERRIDE;
-		case REFERENCE_TYPE_ARGUMENT:
+		case ReferenceKind::TYPE_ARGUMENT:
 			return Edge::EDGE_TYPE_ARGUMENT;
-		case REFERENCE_TEMPLATE_SPECIALIZATION:
+		case ReferenceKind::TEMPLATE_SPECIALIZATION:
 			return Edge::EDGE_TEMPLATE_SPECIALIZATION;
-		case REFERENCE_INCLUDE:
+		case ReferenceKind::INCLUDE:
 			return Edge::EDGE_INCLUDE;
-		case REFERENCE_IMPORT:
+		case ReferenceKind::IMPORT:
 			return Edge::EDGE_IMPORT;
-		case REFERENCE_MACRO_USAGE:
+		case ReferenceKind::MACRO_USAGE:
 			return Edge::EDGE_MACRO_USAGE;
-		case REFERENCE_ANNOTATION_USAGE:
+		case ReferenceKind::ANNOTATION_USAGE:
 			return Edge::EDGE_ANNOTATION_USAGE;
 		default:
 			break;

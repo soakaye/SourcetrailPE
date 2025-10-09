@@ -73,7 +73,7 @@ void PreprocessorCallbacks::InclusionDirective(clang::SourceLocation  /*hashLoca
 		Id includedFileSymbolId = m_client->recordSymbol(includedFileNameHierarchy);
 
 		m_client->recordReference(
-			REFERENCE_INCLUDE,
+			ReferenceKind::INCLUDE,
 			includedFileSymbolId,
 			m_currentFileSymbolId,
 			getParseLocation(fileNameRange.getAsRange()));
@@ -150,7 +150,7 @@ void PreprocessorCallbacks::onMacroUsage(const clang::Token& macroNameToken)
 
 		const NameHierarchy referencedNameHierarchy(macroNameToken.getIdentifierInfo()->getName().str(), NAME_DELIMITER_CXX);
 
-		m_client->recordReference(REFERENCE_MACRO_USAGE, m_client->recordSymbol(referencedNameHierarchy), loc.fileId, loc);
+		m_client->recordReference(ReferenceKind::MACRO_USAGE, m_client->recordSymbol(referencedNameHierarchy), loc.fileId, loc);
 	}
 }
 

@@ -1,32 +1,27 @@
 #include "ReferenceKind.h"
 
+namespace
+{
+
+const ReferenceKind REFERENCE_KINDS[] = {
+	ReferenceKind::UNDEFINED,
+	ReferenceKind::TYPE_USAGE,
+	ReferenceKind::USAGE,
+	ReferenceKind::CALL,
+	ReferenceKind::INHERITANCE,
+	ReferenceKind::OVERRIDE,
+	ReferenceKind::TYPE_ARGUMENT,
+	ReferenceKind::TEMPLATE_SPECIALIZATION,
+	ReferenceKind::INCLUDE,
+	ReferenceKind::IMPORT,
+	ReferenceKind::MACRO_USAGE,
+	ReferenceKind::ANNOTATION_USAGE
+};
+
+}
+
 template <>
 ReferenceKind intToEnum(int value)
 {
-	switch (value)
-	{
-	case REFERENCE_TYPE_USAGE:
-		return REFERENCE_TYPE_USAGE;
-	case REFERENCE_USAGE:
-		return REFERENCE_USAGE;
-	case REFERENCE_CALL:
-		return REFERENCE_CALL;
-	case REFERENCE_INHERITANCE:
-		return REFERENCE_INHERITANCE;
-	case REFERENCE_OVERRIDE:
-		return REFERENCE_OVERRIDE;
-	case REFERENCE_TYPE_ARGUMENT:
-		return REFERENCE_TYPE_ARGUMENT;
-	case REFERENCE_TEMPLATE_SPECIALIZATION:
-		return REFERENCE_TEMPLATE_SPECIALIZATION;
-	case REFERENCE_INCLUDE:
-		return REFERENCE_INCLUDE;
-	case REFERENCE_IMPORT:
-		return REFERENCE_IMPORT;
-	case REFERENCE_MACRO_USAGE:
-		return REFERENCE_MACRO_USAGE;
-	case REFERENCE_ANNOTATION_USAGE:
-		return REFERENCE_ANNOTATION_USAGE;
-	}
-	return REFERENCE_UNDEFINED;
+	return lookupEnum(value, REFERENCE_KINDS, ReferenceKind::UNDEFINED);
 }
