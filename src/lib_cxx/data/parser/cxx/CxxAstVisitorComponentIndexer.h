@@ -46,6 +46,7 @@ public:
 	void visitTemplateTemplateParmDecl(clang::TemplateTemplateParmDecl* d);
 	void visitConceptDecl(clang::ConceptDecl *d);
 	void visitConceptSpecializationExpr(clang::ConceptSpecializationExpr *d);
+	void visitConceptReference(clang::ConceptReference *d);
 	void visitTypeLoc(clang::TypeLoc tl);
 
 	void visitDeclRefExpr(clang::DeclRefExpr* s);
@@ -64,9 +65,8 @@ private:
 		SymbolKind symbolKind);
 
 	void recordTemplateParameterConceptReferences(const clang::TemplateDecl *templateDecl);
-
-	template <typename T>
-	void recordConceptReference(const T *d);
+	template <typename T> void recordConceptReference(const T *d);
+	void recordNamedConceptReference(const clang::ConceptReference *conceptReference);
 
 	void recordDeducedType(const clang::DeducedType *autoType, const clang::NamedDecl *d, const ParseLocation &location);
 

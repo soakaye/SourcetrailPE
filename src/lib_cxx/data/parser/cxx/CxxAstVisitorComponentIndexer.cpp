@@ -498,118 +498,6 @@ void CxxAstVisitorComponentIndexer::visitFunctionTemplateDecl(FunctionTemplateDe
 	}
 }
 
-void CxxAstVisitorComponentIndexer::recordTemplateParameterConceptReferences(const TemplateDecl *templateDecl)
-{
-	if (const TemplateParameterList *templateParameters = templateDecl->getTemplateParameters())
-	{
-		for (const NamedDecl *namedDecl : *templateParameters)
-		{
-			if (const TemplateTypeParmDecl *templateTypeParmDecl = dyn_cast<TemplateTypeParmDecl>(namedDecl))
-			{
-				if (const TypeConstraint *typeConstraint = templateTypeParmDecl->getTypeConstraint())
-				{
-					recordConceptReference(typeConstraint);
-				}
-			}
-		}
-	}
-}
-
-template <typename T>
-void CxxAstVisitorComponentIndexer::recordConceptReference(const T *d)
-{
-	if (const ConceptReference *conceptReference = d->getConceptReference())
-	{
-		if (const ConceptDecl *conceptDecl = conceptReference->getNamedConcept())
-		{
-			const Id conceptDeclId = getOrCreateSymbolId(conceptDecl);
-			const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext());
-			const ParseLocation conceptNameLocation = getParseLocation(conceptReference->getLocation());
-
-			m_client->recordReference(ReferenceKind::USAGE, conceptDeclId, contextSymbolId, conceptNameLocation);
-		}
-	}
-}
-
-void CxxAstVisitorComponentIndexer::recordDeducedType(const DeducedType *containedDeducedType, const NamedDecl *d, const ParseLocation &location)
-{
-	if (QualType deducedType = containedDeducedType->getDeducedType(); !deducedType.isNull())
-	{
-		// Record the deduced type location:
-		Id deducedTypeId = getOrCreateSymbolId(deducedType.getTypePtr());
-
-		m_client->recordDefinitionKind(deducedTypeId, DefinitionKind::EXPLICIT);
-
-		// Record a reference to the type declaration:
-		m_client->recordReference(ReferenceKind::TYPE_USAGE, deducedTypeId, getOrCreateSymbolId(d), location);
-	}
-}
-
-void CxxAstVisitorComponentIndexer::recordNonTrivialDestructorCalls(const FunctionDecl *functionDecl)
-{
-	auto recordDestructorCall = [this](const FunctionDecl *functionDecl, const CXXDestructorDecl *destructorDecl)
-	{
-		Id referencedSymbolId = getOrCreateSymbolId(destructorDecl);
-		Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext());
-		// functionDecl->getLocation: The function name
-		// functionDecl->getBeginLoc: Begin of function
-		// functionDecl->getEndLoc: End of function
-		// functionDecl->getSourceRange: The complete function
-		// functionDecl->getDefaultLoc: No location but 'call' edge
-		// destructorDecl->getSourceRange: The destructor itself
-
-		ParseLocation parseLocation = getParseLocation(functionDecl->getEndLoc());
-		m_client->recordReference(ReferenceKind::CALL, referencedSymbolId, contextSymbolId, parseLocation);
-	};
-
-	// Adapted from:
-	// "How to get information about call to destructors in Clang LibTooling?"
-	// https://stackoverflow.com/questions/59610156/how-to-get-information-about-call-to-destructors-in-clang-libtooling
-
-	if (functionDecl->isThisDeclarationADefinition())
-	{
-		CFG::BuildOptions buildOptions;
-		buildOptions.AddImplicitDtors = true;
-		buildOptions.AddTemporaryDtors = true;
-
-		if (unique_ptr<CFG> cfg = CFG::buildCFG(functionDecl, functionDecl->getBody(), m_astContext, buildOptions))
-		{
-			for (CFGBlock *block : cfg->const_nodes())
-			{
-				for (auto ref : block->refs())
-				{
-					// It should not be necessary to special-case 'CFGBaseDtor'. But 'CFGImplicitDtor::getDestructorDecl' 
-					// is simply missing the implementation of that case. See 'CFGImplicitDtor::getDestructorDecl()':
-					// https://github.com/llvm/llvm-project/blob/a0b8d548fd250c92c8f9274b57e38ad3f0b215e9/clang/lib/Analysis/CFG.cpp#L5465
-					if (optional<CFGBaseDtor> baseDtor = ref->getAs<CFGBaseDtor>())
-					{
-						const CXXBaseSpecifier *baseSpec = baseDtor->getBaseSpecifier();
-						if (const RecordType *recordType = dyn_cast<RecordType>(baseSpec->getType().getDesugaredType(*m_astContext).getTypePtr()))
-						{
-							if (const CXXRecordDecl *recordDecl = dyn_cast<CXXRecordDecl>(recordType->getDecl()))
-							{
-								if (const CXXDestructorDecl *dtorDecl = recordDecl->getDestructor())
-								{
-									recordDestructorCall(functionDecl, dtorDecl);
-								}
-							}
-						}
-					}
-					// If it were not for the above unimplemented functionality, we would only need
-					// this block.
-					else if (optional<CFGImplicitDtor> implicitDtor = ref->getAs<CFGImplicitDtor>())
-					{
-						if (const CXXDestructorDecl *dtorDecl = implicitDtor->getDestructorDecl(*m_astContext))
-						{
-							recordDestructorCall(functionDecl, dtorDecl);
-						}
-					}
-				}
-			}
-		}
-	}
-}
-
 void CxxAstVisitorComponentIndexer::visitCXXMethodDecl(clang::CXXMethodDecl* d)
 {
 	// Decl has been recorded in VisitFunctionDecl
@@ -768,8 +656,12 @@ void CxxAstVisitorComponentIndexer::visitTemplateTypeParmDecl(clang::TemplateTyp
 	if (getAstVisitor()->shouldVisitDecl(d) && d->getDeclName().isIdentifier() &&
 		!d->getName().empty())	  // We don't create symbols for unnamed template parameters.
 	{
-		m_client->recordLocalSymbol(
-			getLocalSymbolName(d->getLocation()), getParseLocation(d->getLocation()));
+		m_client->recordLocalSymbol(getLocalSymbolName(d->getLocation()), getParseLocation(d->getLocation()));
+
+		if (const TypeConstraint *typeConstraint = d->getTypeConstraint())
+		{
+			recordConceptReference(typeConstraint);
+		}
 	}
 }
 
@@ -806,6 +698,14 @@ void CxxAstVisitorComponentIndexer::visitConceptSpecializationExpr(clang::Concep
 	if (getAstVisitor()->shouldVisitStmt(d))
 	{
 		recordConceptReference(d);
+	}
+}
+
+void CxxAstVisitorComponentIndexer::visitConceptReference(clang::ConceptReference *d)
+{
+	if (getAstVisitor()->shouldVisitReference(d->getLocation()))
+	{
+		recordNamedConceptReference(d);
 	}
 }
 
@@ -1108,6 +1008,123 @@ void CxxAstVisitorComponentIndexer::recordTemplateMemberSpecialization(
 		Id symbolId = getOrCreateSymbolId(memberSpecializationInfo->getInstantiatedFrom());
 		m_client->recordSymbolKind(symbolId, symbolKind);
 		m_client->recordReference(ReferenceKind::TEMPLATE_SPECIALIZATION, symbolId, contextId, location);
+	}
+}
+
+void CxxAstVisitorComponentIndexer::recordTemplateParameterConceptReferences(const TemplateDecl *templateDecl)
+{
+	if (const TemplateParameterList *templateParameters = templateDecl->getTemplateParameters())
+	{
+		for (const NamedDecl *namedDecl : *templateParameters)
+		{
+			if (const TemplateTypeParmDecl *templateTypeParmDecl = dyn_cast<TemplateTypeParmDecl>(namedDecl))
+			{
+				if (const TypeConstraint *typeConstraint = templateTypeParmDecl->getTypeConstraint())
+				{
+					recordConceptReference(typeConstraint);
+				}
+			}
+		}
+	}
+}
+
+template <typename T>
+void CxxAstVisitorComponentIndexer::recordConceptReference(const T *d)
+{
+	if (const ConceptReference *conceptReference = d->getConceptReference())
+	{
+		recordNamedConceptReference(conceptReference);
+	}
+}
+
+void CxxAstVisitorComponentIndexer::recordNamedConceptReference(const ConceptReference *conceptReference)
+{
+		if (const ConceptDecl *conceptDecl = conceptReference->getNamedConcept())
+		{
+			const Id conceptDeclId = getOrCreateSymbolId(conceptDecl);
+			const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext());
+			const ParseLocation conceptNameLocation = getParseLocation(conceptReference->getLocation());
+
+			m_client->recordReference(ReferenceKind::USAGE, conceptDeclId, contextSymbolId, conceptNameLocation);
+		}
+}
+
+void CxxAstVisitorComponentIndexer::recordDeducedType(const DeducedType *containedDeducedType, const NamedDecl *d, const ParseLocation &location)
+{
+	if (QualType deducedType = containedDeducedType->getDeducedType(); !deducedType.isNull())
+	{
+		// Record the deduced type location:
+		Id deducedTypeId = getOrCreateSymbolId(deducedType.getTypePtr());
+
+		m_client->recordDefinitionKind(deducedTypeId, DefinitionKind::EXPLICIT);
+
+		// Record a reference to the type declaration:
+		m_client->recordReference(ReferenceKind::TYPE_USAGE, deducedTypeId, getOrCreateSymbolId(d), location);
+	}
+}
+
+void CxxAstVisitorComponentIndexer::recordNonTrivialDestructorCalls(const FunctionDecl *functionDecl)
+{
+	auto recordDestructorCall = [this](const FunctionDecl *functionDecl, const CXXDestructorDecl *destructorDecl)
+	{
+		Id referencedSymbolId = getOrCreateSymbolId(destructorDecl);
+		Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext());
+		// functionDecl->getLocation: The function name
+		// functionDecl->getBeginLoc: Begin of function
+		// functionDecl->getEndLoc: End of function
+		// functionDecl->getSourceRange: The complete function
+		// functionDecl->getDefaultLoc: No location but 'call' edge
+		// destructorDecl->getSourceRange: The destructor itself
+
+		ParseLocation parseLocation = getParseLocation(functionDecl->getEndLoc());
+		m_client->recordReference(ReferenceKind::CALL, referencedSymbolId, contextSymbolId, parseLocation);
+	};
+
+	// Adapted from:
+	// "How to get information about call to destructors in Clang LibTooling?"
+	// https://stackoverflow.com/questions/59610156/how-to-get-information-about-call-to-destructors-in-clang-libtooling
+
+	if (functionDecl->isThisDeclarationADefinition())
+	{
+		CFG::BuildOptions buildOptions;
+		buildOptions.AddImplicitDtors = true;
+		buildOptions.AddTemporaryDtors = true;
+
+		if (unique_ptr<CFG> cfg = CFG::buildCFG(functionDecl, functionDecl->getBody(), m_astContext, buildOptions))
+		{
+			for (CFGBlock *block : cfg->const_nodes())
+			{
+				for (auto ref : block->refs())
+				{
+					// It should not be necessary to special-case 'CFGBaseDtor'. But 'CFGImplicitDtor::getDestructorDecl'
+					// is simply missing the implementation of that case. See 'CFGImplicitDtor::getDestructorDecl()':
+					// https://github.com/llvm/llvm-project/blob/a0b8d548fd250c92c8f9274b57e38ad3f0b215e9/clang/lib/Analysis/CFG.cpp#L5465
+					if (optional<CFGBaseDtor> baseDtor = ref->getAs<CFGBaseDtor>())
+					{
+						const CXXBaseSpecifier *baseSpec = baseDtor->getBaseSpecifier();
+						if (const RecordType *recordType = dyn_cast<RecordType>(baseSpec->getType().getDesugaredType(*m_astContext).getTypePtr()))
+						{
+							if (const CXXRecordDecl *recordDecl = dyn_cast<CXXRecordDecl>(recordType->getDecl()))
+							{
+								if (const CXXDestructorDecl *dtorDecl = recordDecl->getDestructor())
+								{
+									recordDestructorCall(functionDecl, dtorDecl);
+								}
+							}
+						}
+					}
+					// If it were not for the above unimplemented functionality, we would only need
+					// this block.
+					else if (optional<CFGImplicitDtor> implicitDtor = ref->getAs<CFGImplicitDtor>())
+					{
+						if (const CXXDestructorDecl *dtorDecl = implicitDtor->getDestructorDecl(*m_astContext))
+						{
+							recordDestructorCall(functionDecl, dtorDecl);
+						}
+					}
+				}
+			}
+		}
 	}
 }
 

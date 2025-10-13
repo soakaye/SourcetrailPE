@@ -1740,10 +1740,8 @@ TEST_CASE("cxx parser finds deduced decltype(auto) type variables")
 	REQUIRE(containsElement(client->typeUses, "f::auto_int_ref -> int <9:4 9:17>"s));
 }
 
-TEST_CASE("cxx parser finds concept (single name usages)")
+TEST_CASE("cxx parser finds concept in single type constraints")
 {
-	// This examples should contain most if not all possible locations of a single named concept:
-
 	auto client = parseCode(
 	R"(
 		template <typename T>
@@ -1846,10 +1844,8 @@ TEST_CASE("cxx parser finds concept (single name usages)")
 	REQUIRE(client->usages[18] == "auto Adder5::add5<Plusable x:auto, Plusable y:auto>(x:auto, y:auto) -> Plusable<typename T> <61:40 61:47>"s);
 }
 
-TEST_CASE("cxx parser finds concept (multiple name usages)")
+TEST_CASE("cxx parser finds concept in multiple type constraints")
 {
-	// This examples should contain most if not all possible locations of multiple named concept:
-
 	auto client = parseCode(
 	R"(
 		template <typename T>
@@ -1923,7 +1919,7 @@ TEST_CASE("cxx parser finds concept (multiple name usages)")
 
 	REQUIRE(client->errors.size() == 0);
 
-	// Check for the concept declaration:
+	// Check for the concept declarations:
 
 	REQUIRE(client->concepts.size() == 2);
 	REQUIRE(client->concepts[0] == "Plusable<typename T> <3:11 3:18>"s);
@@ -1972,30 +1968,84 @@ TEST_CASE("cxx parser finds concept (multiple name usages)")
 }
 
 
-TEST_CASE("cxx parser finds concept in constrained auto variables")
+TEST_CASE("cxx parser finds concept in constraint auto variables")
 {
 	auto client = parseCode(
-		R"(template<typename T>
-		concept Addable = requires(T a, T b)
+	R"(
+		template <typename T>
+		concept Plusable = requires(T a, T b)
 		{
 			{ a + b };
 		};
 
-		void calculate()
-		{
-			Addable auto r = 0;
-		})");
+		template <Plusable T>
+		auto constraintVariable = 0;
 
-	REQUIRE(client->errors.empty());
+		template <Plusable T>
+		const auto constConstraintVariable = 0;
+
+		template <Plusable T>
+		constexpr auto constExprConstraintVariable = 0;
+
+		Plusable auto abbreviatedConstraintVariable = 0;
+		const Plusable auto abbreviatedConstConstraintVariable = 0;
+		constexpr Plusable auto abbreviatedConstExprConstraintVariable = 0;
+
+		void functionUsingConstraintVariables()
+		{
+			Plusable auto abbreviatedConstraintVariable = 0;
+			const Plusable auto abbreviatedConstConstraintVariable = 0;
+			constexpr Plusable auto abbreviatedConstExprConstraintVariable = 0;
+		}
+	)");
+
+	REQUIRE(client->errors.size() == 0);
 
 	// Check for the concept declaration:
-	REQUIRE(containsElement(client->concepts, "Addable<typename T> <2:11 2:17>"s));
+	REQUIRE(client->concepts.size() == 1);
+	REQUIRE(client->concepts[0] == "Plusable<typename T> <3:11 3:18>"s);
 
 	// Check for the concept usages:
-	REQUIRE(containsElement(client->usages, "calculate::r -> Addable<typename T> <9:4 9:10>"s));
+	REQUIRE(client->usages.size() == 12);
+	REQUIRE(client->usages[0]  == "int constraintVariable<Plusable T> -> Plusable<typename T> <8:13 8:20>"s);
+	REQUIRE(client->usages[1]  == "const int constConstraintVariable<Plusable T> -> Plusable<typename T> <11:13 11:20>"s);
+	REQUIRE(client->usages[2]  == "constexpr int constExprConstraintVariable<Plusable T> -> Plusable<typename T> <14:13 14:20>"s);
 
-	// Check for the correct auto type:
-	REQUIRE(containsElement(client->typeUses, "calculate::r -> int <9:12 9:15>"s));
+	REQUIRE(client->usages[3]  == "int abbreviatedConstraintVariable -> Plusable<typename T> <17:3 17:10>"s);
+	REQUIRE(client->usages[4]  == "const int abbreviatedConstConstraintVariable -> Plusable<typename T> <18:9 18:16>"s);
+	REQUIRE(client->usages[5]  == "constexpr int abbreviatedConstExprConstraintVariable -> Plusable<typename T> <19:13 19:20>"s);
+
+	REQUIRE(client->usages[6]  == "functionUsingConstraintVariables::abbreviatedConstraintVariable -> Plusable<typename T> <23:4 23:11>"s);
+	REQUIRE(client->usages[7]  == "void functionUsingConstraintVariables() -> Plusable<typename T> <23:4 23:11>"s);
+	REQUIRE(client->usages[8]  == "void functionUsingConstraintVariables() -> Plusable<typename T> <24:10 24:17>"s);
+	REQUIRE(client->usages[9]  == "void functionUsingConstraintVariables() -> Plusable<typename T> <25:14 25:21>"s);
+	REQUIRE(client->usages[10] == "functionUsingConstraintVariables::abbreviatedConstConstraintVariable -> Plusable<typename T> <24:10 24:17>"s);
+	REQUIRE(client->usages[11] == "functionUsingConstraintVariables::abbreviatedConstExprConstraintVariable -> Plusable<typename T> <25:14 25:21>"s);
+
+	// Check for the correct auto types:
+	REQUIRE(client->typeUses.size() == 10);
+	REQUIRE(client->typeUses[0] == "int constraintVariable<Plusable T> -> int <9:3 9:6>"s);
+	REQUIRE(client->typeUses[1] == "const int constConstraintVariable<Plusable T> -> int <12:9 12:12>"s);
+	REQUIRE(client->typeUses[2] == "constexpr int constExprConstraintVariable<Plusable T> -> int <15:13 15:16>"s);
+
+	REQUIRE(client->typeUses[3] == "int abbreviatedConstraintVariable -> int <17:12 17:15>"s);
+	REQUIRE(client->typeUses[4] == "const int abbreviatedConstConstraintVariable -> int <18:18 18:21>"s);
+	REQUIRE(client->typeUses[5] == "constexpr int abbreviatedConstExprConstraintVariable -> int <19:22 19:25>"s);
+
+	REQUIRE(client->typeUses[6] == "void functionUsingConstraintVariables() -> void <21:3 21:6>"s);
+	REQUIRE(client->typeUses[7] == "functionUsingConstraintVariables::abbreviatedConstraintVariable -> int <23:13 23:16>"s);
+	REQUIRE(client->typeUses[8] == "functionUsingConstraintVariables::abbreviatedConstConstraintVariable -> int <24:19 24:22>"s);
+	REQUIRE(client->typeUses[9] == "functionUsingConstraintVariables::abbreviatedConstExprConstraintVariable -> int <25:23 25:26>"s);
+
+	// Check for the global variables:
+	REQUIRE(client->globalVariables.size() == 6);
+	REQUIRE(client->globalVariables[0] == "int constraintVariable<Plusable T> <9:8 9:25>"s);
+	REQUIRE(client->globalVariables[1] == "const int constConstraintVariable<Plusable T> <12:14 12:36>"s);
+	REQUIRE(client->globalVariables[2] == "constexpr int constExprConstraintVariable<Plusable T> <15:18 15:44>"s);
+
+	REQUIRE(client->globalVariables[3] == "int abbreviatedConstraintVariable <17:17 17:45>"s);
+	REQUIRE(client->globalVariables[4] == "const int abbreviatedConstConstraintVariable <18:23 18:56>"s);
+	REQUIRE(client->globalVariables[5] == "constexpr int abbreviatedConstExprConstraintVariable <19:27 19:64>"s);
 }
 
 TEST_CASE("cxx parser finds class default private inheritance")

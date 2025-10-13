@@ -147,6 +147,7 @@ public:
 	bool VisitTemplateTemplateParmDecl(clang::TemplateTemplateParmDecl* d);
 	bool VisitConceptDecl(clang::ConceptDecl *d);
 	bool VisitConceptSpecializationExpr(clang::ConceptSpecializationExpr *d);
+	bool VisitConceptReference(clang::ConceptReference *d);
 	static bool VisitTranslationUnitDecl(clang::TranslationUnitDecl* d);
 
 	bool VisitTypeLoc(clang::TypeLoc tl);

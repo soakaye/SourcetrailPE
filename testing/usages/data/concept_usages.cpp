@@ -130,9 +130,22 @@ struct Adder50
 	Minusable auto add50(Plusable auto x, Minusable auto y);
 };
 
+template <Plusable T>
+auto constraintVariable = 0;
 
+template <Plusable T>
+const auto constConstraintVariable = 0;
 
-void functionUsingConstrainedAuto()
+template <Plusable T>
+constexpr auto constExprConstraintVariable = 0;
+
+Plusable auto abbreviatedConstraintVariable = 0;
+const Plusable auto abbreviatedConstConstraintVariable = 0;
+constexpr Plusable auto abbreviatedConstExprConstraintVariable = 0;
+
+void functionUsingConstraintVariables()
 {
-	Plusable auto result = 0;
+	Plusable auto abbreviatedConstraintVariable = 0;
+	const Plusable auto abbreviatedConstConstraintVariable = 0;
+	constexpr Plusable auto abbreviatedConstExprConstraint = 0;
 }

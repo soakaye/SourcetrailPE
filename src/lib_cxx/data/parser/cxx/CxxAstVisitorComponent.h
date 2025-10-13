@@ -113,6 +113,7 @@ public:
 	void visitTemplateTemplateParmDecl(clang::TemplateTemplateParmDecl*  /*d*/) {}
 	void visitConceptDecl(clang::ConceptDecl * /*d*/) {}
 	void visitConceptSpecializationExpr(clang::ConceptSpecializationExpr * /*d*/) {}
+	void visitConceptReference(clang::ConceptReference *) {}
 
 	void visitTypeLoc(clang::TypeLoc  /*tl*/) {}
 
