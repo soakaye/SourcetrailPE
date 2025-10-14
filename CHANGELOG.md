@@ -1,4 +1,14 @@
 ### Changelog
+#### 2025.10.13
+- C/C++: Add indexing of `concept` type constraints
+- C/C++: Use correct keyword for template template parameters (clang/LLVM >= 20)
+
+#### 2025.9.9
+- C/C++: Add indexing of `auto` return types
+- GUI: Allow tab closing with middle mouse click
+- GUI: Improve layout of license window content
+- GUI: Add `Open` to context menu of start window
+
 #### 2025.7.11
 - C/C++: Add indexing of `constexpr`
 - C/C++: Replace most `msvc` compiler switches with the correct `clang` switches (Fixes a long standing issue ["no such file or directory (sourcetrail is treating MSVC options as file/dir)"](https://github.com/CoatiSoftware/Sourcetrail/issues/744)
