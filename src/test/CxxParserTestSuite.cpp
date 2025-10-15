@@ -1713,6 +1713,42 @@ TEST_CASE("cxx parser finds deduced auto type variables")
 	REQUIRE(containsElement(client->typeUses, "f::auto_int_ref -> int <9:4 9:7>"s));
 }
 
+TEST_CASE("cxx parser finds deduced auto type in abbreviated template functions")
+{
+	shared_ptr<TestStorage> client = parseCode(
+	R"(
+		void bar(auto);
+
+		void foo()
+		{
+			bar(1);
+
+			bar(2.0);
+		}
+	)");
+
+	REQUIRE(client->errors.size() == 0);
+
+	// Check the found functions:
+
+	REQUIRE(client->functions.size() == 4);
+	REQUIRE(client->functions[0] == "void bar<class auto:1>(auto:1) <2:3 <2:8 2:10> 2:16>"s);
+	REQUIRE(client->functions[1] == "void bar<int>(int) <2:3 <2:8 2:10> 2:16>"s);
+	REQUIRE(client->functions[2] == "void bar<double>(double) <2:3 <2:8 2:10> 2:16>"s);
+
+	// Check the template specializations:
+
+	REQUIRE(client->templateSpecializations.size() == 2);
+	REQUIRE(client->templateSpecializations[0] == "void bar<int>(int) -> void bar<class auto:1>(auto:1) <2:8 2:10>"s);
+	REQUIRE(client->templateSpecializations[1] == "void bar<double>(double) -> void bar<class auto:1>(auto:1) <2:8 2:10>"s);
+
+	// Check the type usages:
+
+	REQUIRE(client->typeUses.size() == 6);
+	REQUIRE(client->typeUses[2] == "void bar<int>(int) -> int <2:12 2:15>"s);
+	REQUIRE(client->typeUses[4] == "void bar<double>(double) -> double <2:12 2:15>"s);
+}
+
 TEST_CASE("cxx parser finds deduced decltype(auto) type variables")
 {
 	shared_ptr<TestStorage> client = parseCode(
@@ -1729,7 +1765,7 @@ TEST_CASE("cxx parser finds deduced decltype(auto) type variables")
 
 	REQUIRE(client->errors.empty());
 
-	// Find type usages:
+	// Check the type usages:
 	// Note: The locations are on the 'decltype(auto)' keyword, not on the variable name.
 
 	REQUIRE(containsElement(client->typeUses, "f::auto_double_var1 -> double <3:4 3:17>"s));

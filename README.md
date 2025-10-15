@@ -68,6 +68,7 @@ As a sponser you have access to the following **binary releases**:
 
 #### 2025.10.13
 - C/C++: Add indexing of `concept` type constraints
+- C/C++: Add indexing of abbreviated function templates
 - C/C++: Use correct keyword for template template parameters (clang/LLVM >= 20)
 
 #### 2025.9.9
