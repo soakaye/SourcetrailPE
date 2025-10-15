@@ -118,6 +118,7 @@ public:
 	void visitTypeLoc(clang::TypeLoc  /*tl*/) {}
 
 	void visitCastExpr(clang::CastExpr*  /*s*/) {}
+	void visitCXXFunctionalCastExpr(clang::CXXFunctionalCastExpr *) {}
 	void visitUnaryAddrOf(clang::UnaryOperator*  /*s*/) {}
 	void visitUnaryDeref(clang::UnaryOperator*  /*s*/) {}
 	void visitDeclStmt(clang::DeclStmt*  /*s*/) {}

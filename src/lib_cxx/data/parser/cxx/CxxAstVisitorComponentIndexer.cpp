@@ -186,14 +186,26 @@ void CxxAstVisitorComponentIndexer::visitCastExpr(clang::CastExpr *d)
 	{
 		if (d->getCastKind() == clang::CK_UserDefinedConversion)
 		{
-			Id referencedSymbolId = getOrCreateSymbolId(d->getConversionFunction());
-			Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext());
-			ParseLocation location = getParseLocation(d->getSourceRange());
+			const Id referencedSymbolId = getOrCreateSymbolId(d->getConversionFunction());
+			const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext());
+			const ParseLocation location = getParseLocation(d->getSourceRange());
 
 			m_client->recordReference(ReferenceKind::CALL, referencedSymbolId, contextSymbolId, location);
 		}
 	}
 }
+
+void CxxAstVisitorComponentIndexer::visitCXXFunctionalCastExpr(clang::CXXFunctionalCastExpr *d)
+{
+	if (getAstVisitor()->shouldVisitStmt(d))
+	{
+		if (QualType qualType = d->getType(); !qualType.isNull())
+		{
+			recordDeducedQualType(qualType, getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext(), getParseLocation(d->getBeginLoc()));
+		}
+	}
+}
+
 
 void CxxAstVisitorComponentIndexer::visitTagDecl(clang::TagDecl* d)
 {
@@ -1039,28 +1051,33 @@ void CxxAstVisitorComponentIndexer::recordConceptReference(const T *d)
 
 void CxxAstVisitorComponentIndexer::recordNamedConceptReference(const ConceptReference *conceptReference)
 {
-		if (const ConceptDecl *conceptDecl = conceptReference->getNamedConcept())
-		{
-			const Id conceptDeclId = getOrCreateSymbolId(conceptDecl);
-			const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext());
-			const ParseLocation conceptNameLocation = getParseLocation(conceptReference->getLocation());
+	if (const ConceptDecl *conceptDecl = conceptReference->getNamedConcept())
+	{
+		const Id conceptDeclId = getOrCreateSymbolId(conceptDecl);
+		const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext());
+		const ParseLocation conceptNameLocation = getParseLocation(conceptReference->getLocation());
 
-			m_client->recordReference(ReferenceKind::USAGE, conceptDeclId, contextSymbolId, conceptNameLocation);
-		}
+		m_client->recordReference(ReferenceKind::USAGE, conceptDeclId, contextSymbolId, conceptNameLocation);
+	}
 }
 
-void CxxAstVisitorComponentIndexer::recordDeducedType(const DeducedType *containedDeducedType, const NamedDecl *d, const ParseLocation &location)
+void CxxAstVisitorComponentIndexer::recordDeducedType(const DeducedType *containedDeducedType, const NamedDecl *context, const ParseLocation &keywordLocation)
 {
 	if (QualType deducedType = containedDeducedType->getDeducedType(); !deducedType.isNull())
 	{
-		// Record the deduced type location:
-		Id deducedTypeId = getOrCreateSymbolId(deducedType.getTypePtr());
-
-		m_client->recordDefinitionKind(deducedTypeId, DefinitionKind::EXPLICIT);
-
-		// Record a reference to the type declaration:
-		m_client->recordReference(ReferenceKind::TYPE_USAGE, deducedTypeId, getOrCreateSymbolId(d), location);
+		recordDeducedQualType(deducedType, context, keywordLocation);
 	}
+}
+
+template <typename T>
+void CxxAstVisitorComponentIndexer::recordDeducedQualType(const QualType deducedQualType, const T *context, const ParseLocation &keywordLocation)
+{
+	// Record the deduced type location:
+	const Id deducedTypeId = getOrCreateSymbolId(deducedQualType.getTypePtr());
+	const Id contextSymbolId = getOrCreateSymbolId(context);
+
+	m_client->recordDefinitionKind(deducedTypeId, DefinitionKind::EXPLICIT);
+	m_client->recordReference(ReferenceKind::TYPE_USAGE, deducedTypeId, contextSymbolId, keywordLocation);
 }
 
 void CxxAstVisitorComponentIndexer::recordNonTrivialDestructorCalls(const FunctionDecl *functionDecl)

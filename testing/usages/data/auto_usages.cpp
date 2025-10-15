@@ -74,6 +74,17 @@ void functionUsingAuto()
 	int &int_ref = auto_int_var;
 }
 
+void f(auto t);
+
+void functionsUsingAutoPRValue()
+{
+	int i = 10;
+	f(auto(i));
+
+	double d = 0;
+	f(auto(d));
+}
+
 void functionUsingDecltypeAuto()
 {
 	decltype(auto) auto_double_var1 = 0.0;

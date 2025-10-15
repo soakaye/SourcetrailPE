@@ -25,6 +25,7 @@ public:
 	void beginTraverseLambdaCapture(clang::LambdaExpr* lambdaExpr, const clang::LambdaCapture* capture);
 
 	void visitCastExpr(clang::CastExpr *d);
+	void visitCXXFunctionalCastExpr(clang::CXXFunctionalCastExpr *d);
 	void visitTagDecl(clang::TagDecl* d);
 	void visitClassTemplateDecl(clang::ClassTemplateDecl *d);
 	void visitClassTemplateSpecializationDecl(clang::ClassTemplateSpecializationDecl* d);
@@ -68,7 +69,8 @@ private:
 	template <typename T> void recordConceptReference(const T *d);
 	void recordNamedConceptReference(const clang::ConceptReference *conceptReference);
 
-	void recordDeducedType(const clang::DeducedType *autoType, const clang::NamedDecl *d, const ParseLocation &location);
+	void recordDeducedType(const clang::DeducedType *autoType, const clang::NamedDecl *context, const ParseLocation &keywordLocation);
+	template <typename T> void recordDeducedQualType(const clang::QualType deducedQualType, const T *context, const ParseLocation &keywordLocation);
 
 	void recordNonTrivialDestructorCalls(const clang::FunctionDecl *d);
 

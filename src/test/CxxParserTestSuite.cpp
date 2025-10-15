@@ -1686,7 +1686,7 @@ TEST_CASE("cxx parser finds type use of typedef")
 		utility::containsElement<std::string>(client->typeUses, "uint number -> uint <2:1 2:4>"));
 }
 
-TEST_CASE("cxx parser finds deduced auto type variables")
+TEST_CASE("cxx parser finds auto type variables")
 {
 	shared_ptr<TestStorage> client = parseCode(
 		R"(void f()
@@ -1713,7 +1713,32 @@ TEST_CASE("cxx parser finds deduced auto type variables")
 	REQUIRE(containsElement(client->typeUses, "f::auto_int_ref -> int <9:4 9:7>"s));
 }
 
-TEST_CASE("cxx parser finds deduced auto type in abbreviated template functions")
+TEST_CASE("cxx parser finds auto prvalue casts")
+{
+	shared_ptr<TestStorage> client = parseCode(
+	R"(
+		void bar(auto);
+
+		void foo()
+		{
+			int i = 10;
+			bar(auto(i));
+
+			double d = 20;
+			bar(auto(d));
+		}
+	)");
+
+	REQUIRE(client->errors.size() == 0);
+
+	// Check the prvalue usages:
+
+	REQUIRE(client->typeUses.size() == 10);
+	REQUIRE(client->typeUses[7] == "void foo() -> int <7:8 7:11>"s);
+	REQUIRE(client->typeUses[9] == "void foo() -> double <10:8 10:11>"s);
+}
+
+TEST_CASE("cxx parser finds auto types in abbreviated template functions")
 {
 	shared_ptr<TestStorage> client = parseCode(
 	R"(
@@ -1749,7 +1774,7 @@ TEST_CASE("cxx parser finds deduced auto type in abbreviated template functions"
 	REQUIRE(client->typeUses[4] == "void bar<double>(double) -> double <2:12 2:15>"s);
 }
 
-TEST_CASE("cxx parser finds deduced decltype(auto) type variables")
+TEST_CASE("cxx parser finds auto in decltype(auto) type variables")
 {
 	shared_ptr<TestStorage> client = parseCode(
 		R"(void f()

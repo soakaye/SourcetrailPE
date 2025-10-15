@@ -118,6 +118,7 @@ public:
 
 	// Visitor methods. These actually record stuff and store it in the database.
 	bool VisitCastExpr(clang::CastExpr* s);
+	bool VisitCXXFunctionalCastExpr(clang::CXXFunctionalCastExpr *s);
 	bool VisitUnaryAddrOf(clang::UnaryOperator* s);
 	bool VisitUnaryDeref(clang::UnaryOperator* s);
 	bool VisitDeclStmt(clang::DeclStmt* s);
