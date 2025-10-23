@@ -55,11 +55,29 @@ char **EventListener::s_argv = nullptr;
 
 CATCH_REGISTER_LISTENER(EventListener)
 
-int main(int argc, char* argv[])
+// Adapted from: https://github.com/catchorg/Catch2/blob/devel/docs/own-main.md:
+static int catch2_main(int argc, char *argv[])
 {
 	EventListener::s_argc = argc;
 	EventListener::s_argv = argv;
 
+	Catch::Session session;
+
+	// Catch2 version 3.9.1 changed the default run order to random, which breaks a couple of tests.
+	// So restore the old behavior and run the tests in declaration order:
+	// See https://github.com/petermost/Sourcetrail/issues/62
+
+	session.configData().runOrder = Catch::TestRunOrder::Declared;
+
+	int returnCode = session.applyCommandLine(argc, argv);
+	if (returnCode != 0) // Indicates a command line error
+		return returnCode;
+
+	return session.run();
+}
+
+int main(int argc, char* argv[])
+{
 	setupDefaultLocale();
 
 	// Set the 'working directory' manually, as a workaround for "Unable to configure working directory
@@ -70,5 +88,5 @@ int main(int argc, char* argv[])
 	// cout << "Set working directory to '" << workingDirectory << "'" << endl;
 	current_path(workingDirectory);
 
-	return Catch::Session().run( argc, argv );
+	return catch2_main(argc, argv);
 }

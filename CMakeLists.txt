@@ -151,7 +151,7 @@ target_compile_definitions(External_lib_icu
 # ICU::i18n
 # ICU::uc
 # ICU::data
-# lead to a linker error: "undefined reference to `icudt74_dat'",
+# lead to a linker error: "undefined reference to `icudt74_dat'", 
 # so use the provided variables:
 
 target_include_directories(External_lib_icu
@@ -455,12 +455,15 @@ add_subdirectory(src/indexer)
 # App --------------------------------------------------------------------------
 
 configure_file(src/app/Sourcetrail.ico app/Sourcetrail.ico COPYONLY)
-configure_file(scripts/Sourcetrail.sh  app/Sourcetrail.sh COPYONLY)
+	configure_file(scripts/Sourcetrail.sh  app/Sourcetrail.sh COPYONLY)
 configure_file(scripts/_gdbinit        app/.gdbinit COPYONLY)
 
 add_subdirectory(src/app)
 
 # Test ----------------------------------------------------------------------
+
+set(CATCH2_MIN_VERSION 3.7)
+set(CATCH2_MAX_VERSION 3.12)
 
 if (BUILD_UNIT_TESTS_PACKAGE)
 	include(CTest)
@@ -470,8 +473,9 @@ if (BUILD_UNIT_TESTS_PACKAGE)
 	include(GoogleTest)
 	add_subdirectory(src/test_aidkit)
 
-	find_package(Catch2 3.4 CONFIG REQUIRED)
+	find_package(Catch2 CONFIG REQUIRED)
 	message(STATUS "Found Catch2 ${Catch2_VERSION}")
+	checkVersionRange("Catch2" ${Catch2_VERSION} ${CATCH2_MIN_VERSION} ${CATCH2_MAX_VERSION})
 	include(Catch)
 	add_subdirectory(src/test)
 else()
