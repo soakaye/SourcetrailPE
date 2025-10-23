@@ -39,7 +39,7 @@ As a sponser you have access to the following **binary releases**:
 
 |Name|System|Vcpkg|Notes| 
 |----|------|-----|-----|
-|Clang|20.1.2|18.1.6|C++23 Support|
+|Clang/LLVM|20.1.2|18.1.6|C++23 Support|
 
 **Java**
 
@@ -53,15 +53,15 @@ As a sponser you have access to the following **binary releases**:
 
 |Name|System|Vcpkg|
 |----|------|-----|
-|Qt|6.8.3|6.8.3|
-|Boost|1.88.0|1.88.0|
-|SQLite3|3.46.1|3.50.2|
+|Qt|6.8.3|6.9.1|
+|Boost|1.88.0|1.89.0|
+|SQLite3|3.46.1|3.50.4|
 |TinyXML|2.6.2|2.6.2|
 
 **Tests**
 |Name|System|Vcpkg|
 |----|------|-----|
-|Catch2|3.7.1|3.8.1|
+|Catch2|3.7.1|3.11.0|
 |GTest|1.15.0|1.17.0|
 
 ### Changes

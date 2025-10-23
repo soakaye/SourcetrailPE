@@ -35,7 +35,7 @@ endif()
 
 # Project ----------------------------------------------------------------------
 
-project(Sourcetrail VERSION 2025.10.15 HOMEPAGE_URL "http://sourcetrail.de")
+project(Sourcetrail VERSION 2025.10.23 HOMEPAGE_URL "http://sourcetrail.de")
 cmake_print_variables(CMAKE_C_COMPILER)
 cmake_print_variables(CMAKE_CXX_COMPILER)
 
@@ -89,7 +89,9 @@ set(CMAKE_FIND_PACKAGE_SORT_ORDER NATURAL)
 
 # Prepare Data ----------------------------------------------------------------
 
-configure_file(scripts/generate_coverage_report.sh generate_coverage_report.sh COPYONLY)
+if (UNIX)
+	configure_file(scripts/generate_coverage_report.sh generate_coverage_report.sh COPYONLY)
+endif()
 
 get_property(isMultiConfigGenerator GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if (isMultiConfigGenerator)
@@ -138,7 +140,7 @@ find_package(ICU REQUIRED
 	COMPONENTS 
 		i18n uc data
 )
-message(STATUS "Found ICU ${ICU_VERSION}: ${ICU_INCLUDE_DIRS}")
+message(STATUS "Found ICU ${ICU_VERSION}: ${ICU_INCLUDE_DIRS}, ${ICU_LIBRARIES}")
 
 add_library(External_lib_icu INTERFACE)
 
@@ -152,7 +154,7 @@ target_compile_definitions(External_lib_icu
 # ICU::uc
 # ICU::data
 # lead to a linker error: "undefined reference to `icudt74_dat'", 
-# so use the provided variables:
+# so use the provided result variables:
 
 target_include_directories(External_lib_icu
 	INTERFACE
@@ -169,25 +171,21 @@ target_link_libraries(External_lib_icu
 set(Boost_NO_WARN_NEW_VERSIONS ON)
 
 if (isVcpkgBuild)
-	# TODO: Investigate bug entry: https://gitlab.kitware.com/cmake/cmake/-/issues/21200 under Linux.
+	# Associated bug entry: https://gitlab.kitware.com/cmake/cmake/-/issues/21200 has been closed.
 	set(Boost_NO_SYSTEM_PATHS ON)
 endif()
 
 set(BOOST_MIN_VERSION 1.83)
-set(BOOST_MAX_VERSION 1.89)
+set(BOOST_MAX_VERSION 1.90)
 
 find_package(Boost CONFIG REQUIRED 
 	COMPONENTS
-		# compiled libraries:
-		system program_options filesystem date_time locale
-	
-		# 'header-only' libraries which can't be found with find_package:
-		# interprocess uuid asio process predef dll
-	
-		# See https://github.com/Kitware/CMake/blob/master/Modules/FindBoost.cmake#L1409
-		# for a list of compiled libraries.
+		date_time 
+		filesystem 
+		locale
+		program_options 
 )
-message(STATUS "Found Boost ${Boost_VERSION}: ${Boost_INCLUDE_DIRS}")
+message(STATUS "Found Boost ${Boost_VERSION}: ${Boost_INCLUDE_DIRS}") # ${Boost_DIR} contains the path to BoostConfig.cmake|boost-config.cmake.
 checkVersionRange("Boost" ${Boost_VERSION} ${BOOST_MIN_VERSION} ${BOOST_MAX_VERSION})
 
 add_library(External_lib_boost INTERFACE)
@@ -212,12 +210,12 @@ target_compile_definitions(External_lib_boost
 
 target_link_libraries(External_lib_boost
 	INTERFACE
+		Boost::headers
+		
 		Boost::date_time
 		Boost::filesystem
-		Boost::headers
 		Boost::locale
 		Boost::program_options
-		Boost::system
 		
 		# Prevent linker error in vcpkg build:
 		External_lib_icu
@@ -225,12 +223,17 @@ target_link_libraries(External_lib_boost
 
 # Qt ---------------------------------------------------------------------------
 
-set (QT_MIN_VERSION 6.8.3)
+set(QT_NO_PRIVATE_MODULE_WARNING ON)
+
+set(QT_MIN_VERSION 6.8.3)
 # set (QT_MAX_VERSION_HEX 0x060802)
 
 find_package(Qt6 ${QT_MIN_VERSION} CONFIG REQUIRED 
 	COMPONENTS
-		Widgets PrintSupport Network Svg
+		Network 
+		# PrintSupport 
+		Svg
+		Widgets 
 )
 message(STATUS "Found Qt ${Qt6_VERSION}")
 
@@ -253,9 +256,10 @@ target_compile_definitions(External_lib_qt
 
 target_link_libraries(External_lib_qt
 	INTERFACE
-		Qt6::Widgets
 		Qt6::Network
+		# Qt6::PrintSupport
 		Qt6::Svg
+		Qt6::Widgets
 )
 
 # SQLite3 ----------------------------------------------------------------------
@@ -264,7 +268,7 @@ if (isVcpkgBuild)
 	find_package(unofficial-sqlite3 CONFIG REQUIRED)
 	if (NOT DEFINED SQLite3_VERSION)
 		# Use quotes to indicate a version literal:
-		set(SQLite3_VERSION "\"3.50.2\"")
+		set(SQLite3_VERSION "\"3.50.4\"")
 	endif()
 	add_library(External_lib_sqlite3 ALIAS unofficial::sqlite3::sqlite3)
 else()
@@ -455,9 +459,10 @@ add_subdirectory(src/indexer)
 # App --------------------------------------------------------------------------
 
 configure_file(src/app/Sourcetrail.ico app/Sourcetrail.ico COPYONLY)
+if (UNIX)
 	configure_file(scripts/Sourcetrail.sh  app/Sourcetrail.sh COPYONLY)
-configure_file(scripts/_gdbinit        app/.gdbinit COPYONLY)
-
+	configure_file(scripts/_gdbinit        app/.gdbinit COPYONLY)
+endif()
 add_subdirectory(src/app)
 
 # Test ----------------------------------------------------------------------
@@ -489,6 +494,10 @@ endif()
 # Create license information:
 include(cmake/licenses.cmake)
 configureLicenseFile(src/lib_gui/licenses.h)
+
+# Enable this code to find out *all* imported targets:
+# get_property(importedTargets DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY IMPORTED_TARGETS)
+# message(STATUS "Imported targets: ${importedTargets}")
 
 # Installing/Packaging ---------------------------------------------------------
 
