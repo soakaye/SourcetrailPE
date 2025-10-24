@@ -4,6 +4,21 @@
 
 #include "utilityQt.h"
 
+static QImage mirrorImage(QImage image)
+{
+	#if QT_VERSION > QT_VERSION_CHECK(6, 9, 0)
+		image.flip();
+	#else
+		image.mirror();
+	#endif
+
+	#if QT_VERSION >= QT_VERSION_CHECK(6, 13, 0)
+		#warning "QImage::mirror call can be removed"
+	#endif
+
+	return image;
+}
+
 qreal QtDeviceScaledPixmap::devicePixelRatio()
 {
 	QApplication* app = dynamic_cast<QApplication*>(QCoreApplication::instance());
@@ -48,9 +63,9 @@ void QtDeviceScaledPixmap::scaleToHeight(int height)
 	m_pixmap.setDevicePixelRatio(devicePixelRatio());
 }
 
-void QtDeviceScaledPixmap::mirror(bool horizontal, bool vertical)
+void QtDeviceScaledPixmap::mirror()
 {
-	m_pixmap = QPixmap::fromImage(m_pixmap.toImage().mirrored(horizontal, vertical));
+	m_pixmap = QPixmap::fromImage(mirrorImage(m_pixmap.toImage()));
 	m_pixmap.setDevicePixelRatio(devicePixelRatio());
 }
 

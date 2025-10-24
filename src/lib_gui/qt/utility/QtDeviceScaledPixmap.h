@@ -20,7 +20,7 @@ public:
 	void scaleToWidth(int width);
 	void scaleToHeight(int height);
 
-	void mirror(bool horizontal = false, bool vertical = true);
+	void mirror();
 	void colorize(QColor color);
 
 private:

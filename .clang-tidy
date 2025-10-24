@@ -24,6 +24,7 @@ Checks: >
     bugprone-string-constructor,
     bugprone-unique-ptr-array-mismatch,
     misc-unused-parameters,
+    misc-unused-using-decls,
     modernize-use-bool-literals,
     modernize-use-nullptr,
     modernize-use-override,
