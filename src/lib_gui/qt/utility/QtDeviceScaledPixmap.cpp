@@ -4,21 +4,6 @@
 
 #include "utilityQt.h"
 
-static QImage mirrorImage(QImage image)
-{
-	#if QT_VERSION > QT_VERSION_CHECK(6, 9, 0)
-		image.flip();
-	#else
-		image.mirror();
-	#endif
-
-	#if QT_VERSION >= QT_VERSION_CHECK(6, 13, 0)
-		#warning "QImage::mirror call can be removed"
-	#endif
-
-	return image;
-}
-
 qreal QtDeviceScaledPixmap::devicePixelRatio()
 {
 	QApplication* app = dynamic_cast<QApplication*>(QCoreApplication::instance());
@@ -51,21 +36,23 @@ qreal QtDeviceScaledPixmap::height() const
 
 void QtDeviceScaledPixmap::scaleToWidth(int width)
 {
-	m_pixmap = m_pixmap.scaledToWidth(
-		static_cast<int>(width * devicePixelRatio()), Qt::SmoothTransformation);
+	m_pixmap = m_pixmap.scaledToWidth(static_cast<int>(width * devicePixelRatio()), Qt::SmoothTransformation);
 	m_pixmap.setDevicePixelRatio(devicePixelRatio());
 }
 
 void QtDeviceScaledPixmap::scaleToHeight(int height)
 {
-	m_pixmap = m_pixmap.scaledToHeight(
-		static_cast<int>(height * devicePixelRatio()), Qt::SmoothTransformation);
+	m_pixmap = m_pixmap.scaledToHeight(static_cast<int>(height * devicePixelRatio()), Qt::SmoothTransformation);
 	m_pixmap.setDevicePixelRatio(devicePixelRatio());
 }
 
 void QtDeviceScaledPixmap::mirror()
 {
-	m_pixmap = QPixmap::fromImage(mirrorImage(m_pixmap.toImage()));
+	#if QT_VERSION > QT_VERSION_CHECK(6, 9, 0)
+		m_pixmap = QPixmap::fromImage(m_pixmap.toImage().flipped());
+	#else
+		m_pixmap = QPixmap::fromImage(m_pixmap.toImage().mirrored());
+	#endif
 	m_pixmap.setDevicePixelRatio(devicePixelRatio());
 }
 
