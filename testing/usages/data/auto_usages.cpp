@@ -56,8 +56,20 @@ void callFunction(const std::string &s1)
 	auto *ip = &i;
 
 	auto i2 = 0;
+}
 
-	auto [v1, v2, v3] = Result { 3.14, '3', 3 };
+void functionUsingStructuredBinding()
+{
+	int array[] = { 1, 2, 3 };
+
+	auto [i1, i2, i3] = array;
+	auto ir = i1 + i2 + i3;
+
+	auto [m1, m2, m3] = Result { 1.0, '2', 3 };
+	auto mr = m1 + m2 + m3;
+
+	auto [f1, f2, f3] = returnResult();
+	auto fr = f1 + f2 + f3;
 }
 
 void functionUsingAuto()
@@ -74,17 +86,6 @@ void functionUsingAuto()
 	int &int_ref = auto_int_var;
 }
 
-void f(auto t);
-
-void functionsUsingAutoPRValue()
-{
-	int i = 10;
-	f(auto(i));
-
-	double d = 0;
-	f(auto(d));
-}
-
 void functionUsingDecltypeAuto()
 {
 	decltype(auto) auto_double_var1 = 0.0;
@@ -98,6 +99,24 @@ void functionUsingDecltypeAuto()
 	int *int_ptr = &auto_int_var;
 	int &int_ref = auto_int_var;
 }
+
+void functionUsingGnuAuto()
+{
+	__auto_type auto_char_var1 = '0';
+	__auto_type auto_char_var2 = auto_char_var1;
+}
+
+void f(auto t);
+
+void functionsUsingAutoPRValue()
+{
+	int i = 10;
+	f(auto(i));
+
+	double d = 0;
+	f(auto(d));
+}
+
 
 template <typename C, typename R>
 R functionUsingAuto2(const C &c)

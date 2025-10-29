@@ -30,6 +30,7 @@ public:
 	void visitClassTemplateDecl(clang::ClassTemplateDecl *d);
 	void visitClassTemplateSpecializationDecl(clang::ClassTemplateSpecializationDecl* d);
 	void visitVarDecl(clang::VarDecl* d);
+	void visitDecompositionDecl(clang::DecompositionDecl *d);
 	void visitVarTemplateSpecializationDecl(clang::VarTemplateSpecializationDecl* d);
 	void visitFieldDecl(clang::FieldDecl* d);
 	void visitFunctionDecl(clang::FunctionDecl* d);
@@ -69,8 +70,8 @@ private:
 	template <typename T> void recordConceptReference(const T *d);
 	void recordNamedConceptReference(const clang::ConceptReference *conceptReference);
 
-	void recordDeducedType(const clang::DeducedType *autoType, const clang::NamedDecl *context, const ParseLocation &keywordLocation);
-	template <typename T> void recordDeducedQualType(const clang::QualType deducedQualType, const T *context, const ParseLocation &keywordLocation);
+	void recordDeducedType(const clang::DeducedType *autoType, const Id contextSymbolId, const ParseLocation &keywordLocation);
+	void recordDeducedQualType(const clang::QualType deducedQualType, const Id contextSymbolId, const ParseLocation &keywordLocation);
 
 	void recordNonTrivialDestructorCalls(const clang::FunctionDecl *d);
 

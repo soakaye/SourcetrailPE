@@ -1698,19 +1698,134 @@ TEST_CASE("cxx parser finds auto type variables")
 			auto auto_int_ptr1 = &auto_int_var;
 			auto *auto_int_ptr2 = &auto_int_var;
 			auto &auto_int_ref = auto_int_var;
+
+			int int_var = 0;
 		})");
 
 	REQUIRE(client->errors.empty());
 
-	// Find type usages:
+	// TODO (petermost): Why doesn't client->builtinTypes contain the 'double' variables?
+	// But they show up in the Graph view.
+
+	// Check the type usages:
 	// Note: The locations are on the 'auto' keyword, not on the variable name.
 
-	REQUIRE(containsElement(client->typeUses, "f::auto_double_var1 -> double <3:4 3:7>"s));
-	REQUIRE(containsElement(client->typeUses, "f::auto_double_var2 -> double <4:4 4:7>"s));
-	REQUIRE(containsElement(client->typeUses, "f::auto_int_var -> int <6:4 6:7>"s));
-	REQUIRE(containsElement(client->typeUses, "f::auto_int_ptr1 -> int <7:4 7:7>"s));
-	REQUIRE(containsElement(client->typeUses, "f::auto_int_ptr2 -> int <8:4 8:7>"s));
-	REQUIRE(containsElement(client->typeUses, "f::auto_int_ref -> int <9:4 9:7>"s));
+	REQUIRE(client->typeUses.size() == 8);
+
+	// Function return type:
+	REQUIRE(client->typeUses[0] == "void f() -> void <1:1 1:4>"s);
+
+	// Used 'auto' types:
+	REQUIRE(client->typeUses[1] == "void f() -> double <3:4 3:7>"s);
+	REQUIRE(client->typeUses[2] == "void f() -> double <4:4 4:7>"s);
+	REQUIRE(client->typeUses[3] == "void f() -> int <6:4 6:7>"s);
+	REQUIRE(client->typeUses[4] == "void f() -> int <7:4 7:7>"s);
+	REQUIRE(client->typeUses[5] == "void f() -> int <8:4 8:7>"s);
+	REQUIRE(client->typeUses[6] == "void f() -> int <9:4 9:7>"s);
+
+	// Explicit control type without 'auto':
+	REQUIRE(client->typeUses[7] == "void f() -> int <11:4 11:6>"s);
+
+	// Check for local 'auto' variables:
+	REQUIRE(client->localSymbols.size() == 13);
+
+	REQUIRE(client->localSymbols[3] == "input.cc<3:9> <3:9 3:24>"s);
+	REQUIRE(client->localSymbols[4] == "input.cc<3:9> <4:28 4:43>"s);
+	REQUIRE(client->localSymbols[5] == "input.cc<4:9> <4:9 4:24>"s);
+
+	REQUIRE(client->localSymbols[6] == "input.cc<6:9> <6:9 6:20>"s);
+	REQUIRE(client->localSymbols[7] == "input.cc<6:9> <7:26 7:37>"s);
+	REQUIRE(client->localSymbols[8] == "input.cc<6:9> <8:27 8:38>"s);
+	REQUIRE(client->localSymbols[9] == "input.cc<6:9> <9:25 9:36>"s);
+	REQUIRE(client->localSymbols[10] == "input.cc<7:9> <7:9 7:21>"s);
+	REQUIRE(client->localSymbols[11] == "input.cc<8:10> <8:10 8:22>"s);
+	REQUIRE(client->localSymbols[12] == "input.cc<9:10> <9:10 9:21>"s);
+}
+
+TEST_CASE("cxx parser finds auto in decltype(auto) type variables")
+{
+	shared_ptr<TestStorage> client = parseCode(
+		R"(void f()
+		{
+			decltype(auto) auto_double_var1 = 0.0;
+			decltype(auto) auto_double_var2 = auto_double_var1;
+
+			decltype(auto) auto_int_var = 0;
+			decltype(auto) auto_int_ptr1 = &auto_int_var;
+			decltype(auto) auto_int_ptr2 = &auto_int_var;
+			decltype(auto) auto_int_ref = auto_int_var;
+
+			int int_var = 0;
+		})");
+
+	REQUIRE(client->errors.empty());
+
+	// TODO (petermost): Why doesn't client->builtinTypes contain the 'double' variables?
+	// But they show up in the Graph view.
+
+	// Check the type usages:
+	// Note: The locations are on the 'decltype(auto)' keyword, not on the variable name.
+
+	REQUIRE(client->typeUses.size() == 8);
+
+	// Function return type:
+	REQUIRE(client->typeUses[0] == "void f() -> void <1:1 1:4>"s);
+
+	// Used 'decltype(auto)' types:
+	REQUIRE(client->typeUses[1] == "void f() -> double <3:4 3:17>"s);
+	REQUIRE(client->typeUses[2] == "void f() -> double <4:4 4:17>"s);
+	REQUIRE(client->typeUses[3] == "void f() -> int <6:4 6:17>"s);
+	REQUIRE(client->typeUses[4] == "void f() -> int <7:4 7:17>"s);
+	REQUIRE(client->typeUses[5] == "void f() -> int <8:4 8:17>"s);
+	REQUIRE(client->typeUses[6] == "void f() -> int <9:4 9:17>"s);
+
+	// Explicit control type without 'decltype(auto)':
+	REQUIRE(client->typeUses[7] == "void f() -> int <11:4 11:6>"s);
+
+	// Check for local 'decltype(auto' variables:
+	REQUIRE(client->localSymbols.size() == 13);
+
+	REQUIRE(client->localSymbols[3] == "input.cc<3:19> <3:19 3:34>"s);
+	REQUIRE(client->localSymbols[4] == "input.cc<3:19> <4:38 4:53>"s);
+	REQUIRE(client->localSymbols[5] == "input.cc<4:19> <4:19 4:34>"s);
+
+	REQUIRE(client->localSymbols[6] == "input.cc<6:19> <6:19 6:30>"s);
+	REQUIRE(client->localSymbols[7] == "input.cc<6:19> <7:36 7:47>"s);
+	REQUIRE(client->localSymbols[8] == "input.cc<6:19> <8:36 8:47>"s);
+	REQUIRE(client->localSymbols[9] == "input.cc<6:19> <9:34 9:45>"s);
+	REQUIRE(client->localSymbols[10] == "input.cc<7:19> <7:19 7:31>"s);
+	REQUIRE(client->localSymbols[11] == "input.cc<8:19> <8:19 8:31>"s);
+	REQUIRE(client->localSymbols[12] == "input.cc<9:19> <9:19 9:30>"s);
+}
+
+TEST_CASE("cxx parser finds auto in structured bindings")
+{
+	shared_ptr<TestStorage> client = parseCode(
+	R"(
+		int array[] = { 1, 2, 3 };
+
+		void f()
+		{
+			auto [i1, i2, i3] = array;
+			auto r = i1 + i2 + i3;
+		}
+	)");
+
+	REQUIRE(client->errors.size() == 0);
+
+	REQUIRE(client->localSymbols.size() == 11);
+
+	// Check for the local variables from the structured binding:
+
+	REQUIRE(client->localSymbols[4] == "input.cc<6:10> <6:10 6:11>"s);
+	REQUIRE(client->localSymbols[6] == "input.cc<6:14> <6:14 6:15>"s);
+	REQUIRE(client->localSymbols[8] == "input.cc<6:18> <6:18 6:19>"s);
+
+	// Check further usage of the structured binding variables:
+
+	REQUIRE(client->localSymbols[5] == "input.cc<6:10> <7:13 7:14>"s);
+	REQUIRE(client->localSymbols[7] == "input.cc<6:14> <7:18 7:19>"s);
+	REQUIRE(client->localSymbols[9] == "input.cc<6:18> <7:23 7:24>"s);
 }
 
 TEST_CASE("cxx parser finds auto prvalue casts")
@@ -1772,33 +1887,6 @@ TEST_CASE("cxx parser finds auto types in abbreviated template functions")
 	REQUIRE(client->typeUses.size() == 6);
 	REQUIRE(client->typeUses[2] == "void bar<int>(int) -> int <2:12 2:15>"s);
 	REQUIRE(client->typeUses[4] == "void bar<double>(double) -> double <2:12 2:15>"s);
-}
-
-TEST_CASE("cxx parser finds auto in decltype(auto) type variables")
-{
-	shared_ptr<TestStorage> client = parseCode(
-		R"(void f()
-		{
-			decltype(auto) auto_double_var1 = 0.0;
-			decltype(auto) auto_double_var2 = auto_double_var1;
-
-			decltype(auto) auto_int_var = 0;
-			decltype(auto) auto_int_ptr1 = &auto_int_var;
-			decltype(auto) auto_int_ptr2 = &auto_int_var;
-			decltype(auto) auto_int_ref = auto_int_var;
-		})");
-
-	REQUIRE(client->errors.empty());
-
-	// Check the type usages:
-	// Note: The locations are on the 'decltype(auto)' keyword, not on the variable name.
-
-	REQUIRE(containsElement(client->typeUses, "f::auto_double_var1 -> double <3:4 3:17>"s));
-	REQUIRE(containsElement(client->typeUses, "f::auto_double_var2 -> double <4:4 4:17>"s));
-	REQUIRE(containsElement(client->typeUses, "f::auto_int_var -> int <6:4 6:17>"s));
-	REQUIRE(containsElement(client->typeUses, "f::auto_int_ptr1 -> int <7:4 7:17>"s));
-	REQUIRE(containsElement(client->typeUses, "f::auto_int_ptr2 -> int <8:4 8:17>"s));
-	REQUIRE(containsElement(client->typeUses, "f::auto_int_ref -> int <9:4 9:17>"s));
 }
 
 TEST_CASE("cxx parser finds concept in single type constraints")

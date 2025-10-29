@@ -134,6 +134,7 @@ public:
 	bool VisitFunctionTemplateDecl(clang::FunctionTemplateDecl *d);
 	bool VisitCXXMethodDecl(clang::CXXMethodDecl* d);
 	bool VisitVarDecl(clang::VarDecl* d);
+	bool VisitDecompositionDecl(clang::DecompositionDecl *d);
 	bool VisitVarTemplateSpecializationDecl(clang::VarTemplateSpecializationDecl* d);
 	bool VisitFieldDecl(clang::FieldDecl* d);
 	bool VisitTypedefDecl(clang::TypedefDecl* d);

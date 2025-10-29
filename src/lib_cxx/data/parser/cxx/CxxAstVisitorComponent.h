@@ -96,6 +96,7 @@ public:
 	void visitClassTemplateDecl(clang::ClassTemplateDecl * /*d*/) {}
 	void visitClassTemplateSpecializationDecl(clang::ClassTemplateSpecializationDecl*  /*d*/) {}
 	void visitVarDecl(clang::VarDecl*  /*d*/) {}
+	void visitDecompositionDecl(clang::DecompositionDecl *) {}
 	void visitVarTemplateSpecializationDecl(clang::VarTemplateSpecializationDecl*  /*d*/) {}
 	void visitFieldDecl(clang::FieldDecl*  /*d*/) {}
 	void visitFunctionDecl(clang::FunctionDecl*  /*d*/) {}

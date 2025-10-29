@@ -201,7 +201,8 @@ void CxxAstVisitorComponentIndexer::visitCXXFunctionalCastExpr(clang::CXXFunctio
 	{
 		if (QualType qualType = d->getType(); !qualType.isNull())
 		{
-			recordDeducedQualType(qualType, getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext(), getParseLocation(d->getBeginLoc()));
+			const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext());
+			recordDeducedQualType(qualType, contextSymbolId, getParseLocation(d->getBeginLoc()));
 		}
 	}
 }
@@ -300,21 +301,15 @@ void CxxAstVisitorComponentIndexer::visitVarDecl(clang::VarDecl* d)
 
 							// Record 'auto' location:
 							const ParseLocation autoKeywordLocation = getParseLocation(autoTypeLoc.getNameLoc());
-							recordDeducedType(deducedVariableType, d, autoKeywordLocation);
+							recordDeducedType(deducedVariableType, getOrCreateSymbolId(d), autoKeywordLocation);
 						}
 						else
 						{
-							// Record 'auto' or 'decltype(auto)' location:
-							if (autoVariableType->isDecltypeAuto())
-							{
-								const ParseLocation decltypeAutoKeywordLocation = getParseLocation(autoTypeLoc.getSourceRange());
-								recordDeducedType(deducedVariableType, d, decltypeAutoKeywordLocation);
-							}
-							else
-							{
-								const ParseLocation autoKeywordLocation = getParseLocation(autoTypeLoc.getBeginLoc());
-								recordDeducedType(deducedVariableType, d, autoKeywordLocation);
-							}
+							// Record keyword location:
+							const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext());
+							const ParseLocation autoTypeKeywordLocation = getParseLocation(autoTypeLoc.getSourceRange());
+
+							recordDeducedType(deducedVariableType, contextSymbolId, autoTypeKeywordLocation);
 						}
 					}
 				}
@@ -322,7 +317,8 @@ void CxxAstVisitorComponentIndexer::visitVarDecl(clang::VarDecl* d)
 		}
 		if (utility::isLocalVariable(d) || utility::isParameter(d))
 		{
-			if (!d->getNameAsString().empty())	  // don't record anonymous parameters
+			// Don't record anonymous parameters:
+			if (!d->getNameAsString().empty())
 			{
 				m_client->recordLocalSymbol(getLocalSymbolName(d->getLocation()), getParseLocation(d->getLocation()));
 			}
@@ -339,6 +335,23 @@ void CxxAstVisitorComponentIndexer::visitVarDecl(clang::VarDecl* d)
 			m_client->recordDefinitionKind(symbolId, utility::getDefinitionKind(d));
 
 			recordTemplateMemberSpecialization(d->getMemberSpecializationInfo(), symbolId, location, symbolKind);
+		}
+	}
+}
+
+void CxxAstVisitorComponentIndexer::visitDecompositionDecl(clang::DecompositionDecl *d)
+{
+	// Record structured bindings:
+
+	if (getAstVisitor()->shouldVisitDecl(d))
+	{
+		for (const BindingDecl *bindingDecl : d->bindings())
+		{
+			// Don't record anonymous bindings:
+			if (!bindingDecl->getNameAsString().empty())
+			{
+				m_client->recordLocalSymbol(getLocalSymbolName(bindingDecl->getLocation()), getParseLocation(bindingDecl->getLocation()));
+			}
 		}
 	}
 }
@@ -479,6 +492,8 @@ void CxxAstVisitorComponentIndexer::visitFunctionDecl(clang::FunctionDecl* d)
 
 			if (const AutoType *autoReturnType = dyn_cast<AutoType>(deducedReturnType))
 			{
+				const Id contextSymbolId = getOrCreateSymbolId(d);
+
 				if (const ConceptDecl *conceptDecl = autoReturnType->getTypeConstraintConcept())
 				{
 					// Record the concept reference:
@@ -487,13 +502,13 @@ void CxxAstVisitorComponentIndexer::visitFunctionDecl(clang::FunctionDecl* d)
 
 					// Record the auto type:
 					const ParseLocation autoKeywordLocation = getParseLocation(returnTypeSourceRange.getEnd());
-					recordDeducedType(deducedReturnType, d, autoKeywordLocation);
+					recordDeducedType(deducedReturnType, contextSymbolId, autoKeywordLocation);
 				}
 				else
 				{
 					// Record the auto/deduced return type:
 					const ParseLocation autoOrDecltypeKeywordLocation = getParseLocation(returnTypeSourceRange);
-					recordDeducedType(deducedReturnType, d, autoOrDecltypeKeywordLocation);
+					recordDeducedType(deducedReturnType, contextSymbolId, autoOrDecltypeKeywordLocation);
 				}
 			}
 		}
@@ -814,26 +829,29 @@ void CxxAstVisitorComponentIndexer::visitTypeLoc(clang::TypeLoc tl)
 
 void CxxAstVisitorComponentIndexer::visitDeclRefExpr(clang::DeclRefExpr* s)
 {
-	clang::ValueDecl* decl = s->getDecl();
-	if (getAstVisitor()->shouldVisitReference(s->getLocation()))
+	const clang::ValueDecl *decl = s->getDecl();
+
+	// If we don't check for anonymous declarations here, then structured binding variable locations are not recorded separately!
+	if (getAstVisitor()->shouldVisitReference(s->getLocation()) && !decl->getNameAsString().empty())
 	{
-		if ((clang::isa<clang::ParmVarDecl>(decl)) ||
-			(clang::isa<clang::VarDecl>(decl) && decl->getParentFunctionOrMethod() != nullptr))
+		// Check for function parameter:
+		if (clang::isa<clang::ParmVarDecl>(decl) || (clang::isa<clang::VarDecl>(decl) && decl->getParentFunctionOrMethod() != nullptr))
 		{
 			if (!utility::isImplicit(decl))
 			{
-				m_client->recordLocalSymbol(
-					getLocalSymbolName(decl->getLocation()), getParseLocation(s->getLocation()));
+				m_client->recordLocalSymbol(getLocalSymbolName(decl->getLocation()), getParseLocation(s->getLocation()));
 			}
-			// else { don't do anything }
 		}
-		else if (
-			(clang::isa<clang::NonTypeTemplateParmDecl>(decl)) ||
-			(clang::isa<clang::TemplateTypeParmDecl>(decl)) ||
-			(clang::isa<clang::TemplateTemplateParmDecl>(decl)))
+		// Check for template parameter:
+		else if (clang::isa<clang::NonTypeTemplateParmDecl>(decl) || clang::isa<clang::TemplateTypeParmDecl>(decl) || clang::isa<clang::TemplateTemplateParmDecl>(decl))
 		{
-			m_client->recordLocalSymbol(
-				getLocalSymbolName(decl->getLocation()), getParseLocation(s->getLocation()));
+			m_client->recordLocalSymbol(getLocalSymbolName(decl->getLocation()), getParseLocation(s->getLocation()));
+		}
+		// Check for structured binding declaration:
+		else if (clang::isa<clang::BindingDecl>(decl))
+		{
+			// Without this line the structured binding variables are not indexed as local variables!
+			m_client->recordLocalSymbol(getLocalSymbolName(decl->getLocation()), getParseLocation(s->getLocation()));
 		}
 		else
 		{
@@ -844,13 +862,8 @@ void CxxAstVisitorComponentIndexer::visitDeclRefExpr(clang::DeclRefExpr* s)
 			{
 				m_client->recordSymbolKind(symbolId, SymbolKind::FUNCTION);
 			}
-
-			m_client->recordReference(
-				refKind,
-				symbolId,
-				getOrCreateSymbolId(
-					getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext()),
-				getParseLocation(s->getLocation()));
+			const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext());
+			m_client->recordReference(refKind, symbolId, contextSymbolId, getParseLocation(s->getLocation()));
 		}
 	}
 }
@@ -859,20 +872,15 @@ void CxxAstVisitorComponentIndexer::visitMemberExpr(clang::MemberExpr* s)
 {
 	if (getAstVisitor()->shouldVisitReference(s->getMemberLoc()))
 	{
-		Id symbolId = getOrCreateSymbolId(s->getMemberDecl());
-
+		const Id symbolId = getOrCreateSymbolId(s->getMemberDecl());
+		const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext());
 		const ReferenceKind refKind = consumeDeclRefContextKind();
+
 		if (refKind == ReferenceKind::CALL)
 		{
 			m_client->recordSymbolKind(symbolId, SymbolKind::FUNCTION);
 		}
-
-		m_client->recordReference(
-			refKind,
-			symbolId,
-			getOrCreateSymbolId(
-				getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext()),
-			getParseLocation(s->getMemberLoc()));
+		m_client->recordReference(refKind, symbolId, contextSymbolId, getParseLocation(s->getMemberLoc()));
 	}
 }
 
@@ -1061,20 +1069,18 @@ void CxxAstVisitorComponentIndexer::recordNamedConceptReference(const ConceptRef
 	}
 }
 
-void CxxAstVisitorComponentIndexer::recordDeducedType(const DeducedType *containedDeducedType, const NamedDecl *context, const ParseLocation &keywordLocation)
+void CxxAstVisitorComponentIndexer::recordDeducedType(const DeducedType *containedDeducedType, const Id contextSymbolId, const ParseLocation &keywordLocation)
 {
 	if (QualType deducedType = containedDeducedType->getDeducedType(); !deducedType.isNull())
 	{
-		recordDeducedQualType(deducedType, context, keywordLocation);
+		recordDeducedQualType(deducedType, contextSymbolId, keywordLocation);
 	}
 }
 
-template <typename T>
-void CxxAstVisitorComponentIndexer::recordDeducedQualType(const QualType deducedQualType, const T *context, const ParseLocation &keywordLocation)
+void CxxAstVisitorComponentIndexer::recordDeducedQualType(const QualType deducedQualType, const Id contextSymbolId, const ParseLocation &keywordLocation)
 {
 	// Record the deduced type location:
 	const Id deducedTypeId = getOrCreateSymbolId(deducedQualType.getTypePtr());
-	const Id contextSymbolId = getOrCreateSymbolId(context);
 
 	m_client->recordDefinitionKind(deducedTypeId, DefinitionKind::EXPLICIT);
 	m_client->recordReference(ReferenceKind::TYPE_USAGE, deducedTypeId, contextSymbolId, keywordLocation);
