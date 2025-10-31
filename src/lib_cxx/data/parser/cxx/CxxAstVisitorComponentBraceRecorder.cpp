@@ -46,8 +46,8 @@ void CxxAstVisitorComponentBraceRecorder::visitCompoundStmt(clang::CompoundStmt*
 {
 	if (getAstVisitor()->shouldVisitStmt(s))
 	{
-		const clang::NamedDecl* contextDecl =
-			getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getTopmostContextDecl();
+		const clang::NamedDecl* contextDecl = 
+			getAstVisitor()->getContextComponent()->getTopmostContextDecl();
 		if (!contextDecl || !utility::isImplicit(contextDecl))
 		{
 			recordBraces(
@@ -65,7 +65,7 @@ void CxxAstVisitorComponentBraceRecorder::visitInitListExpr(clang::InitListExpr*
 		if (s->isSyntacticForm())
 		{
 			const clang::NamedDecl* contextDecl =
-				getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getTopmostContextDecl();
+				getAstVisitor()->getContextComponent()->getTopmostContextDecl();
 			if (!contextDecl || !utility::isImplicit(contextDecl))
 			{
 				recordBraces(
@@ -84,7 +84,7 @@ void CxxAstVisitorComponentBraceRecorder::visitMSAsmStmt(clang::MSAsmStmt* s)
 		if (s->hasBraces())
 		{
 			const clang::NamedDecl* contextDecl =
-				getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getTopmostContextDecl();
+				getAstVisitor()->getContextComponent()->getTopmostContextDecl();
 			if (!contextDecl || !utility::isImplicit(contextDecl))
 			{
 				recordBraces(

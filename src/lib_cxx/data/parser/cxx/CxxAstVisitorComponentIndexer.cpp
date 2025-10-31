@@ -141,13 +141,13 @@ void CxxAstVisitorComponentIndexer::beginTraverseTemplateArgumentLoc(
 					ReferenceKind::TYPE_USAGE,
 					symbolId,
 					getOrCreateSymbolId(
-						getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext()),
+						getAstVisitor()->getContextComponent()->getContext()),
 					parseLocation);
 
 				{
 					if (const clang::NamedDecl* namedContextDecl =
 							getAstVisitor()
-								->getComponent<CxxAstVisitorComponentContext>()
+								->getContextComponent()
 								->getTopmostContextDecl(1))
 					{
 						m_client->recordReference(
@@ -187,7 +187,7 @@ void CxxAstVisitorComponentIndexer::visitCastExpr(clang::CastExpr *d)
 		if (d->getCastKind() == clang::CK_UserDefinedConversion)
 		{
 			const Id referencedSymbolId = getOrCreateSymbolId(d->getConversionFunction());
-			const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext());
+			const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getContextComponent()->getContext());
 			const ParseLocation location = getParseLocation(d->getSourceRange());
 
 			m_client->recordReference(ReferenceKind::CALL, referencedSymbolId, contextSymbolId, location);
@@ -201,7 +201,7 @@ void CxxAstVisitorComponentIndexer::visitCXXFunctionalCastExpr(clang::CXXFunctio
 	{
 		if (QualType qualType = d->getType(); !qualType.isNull())
 		{
-			const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext());
+			const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getContextComponent()->getContext());
 			recordDeducedQualType(qualType, contextSymbolId, getParseLocation(d->getBeginLoc()));
 		}
 	}
@@ -306,7 +306,7 @@ void CxxAstVisitorComponentIndexer::visitVarDecl(clang::VarDecl* d)
 						else
 						{
 							// Record keyword location:
-							const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext());
+							const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getContextComponent()->getContext());
 							const ParseLocation autoTypeKeywordLocation = getParseLocation(autoTypeLoc.getSourceRange());
 
 							recordDeducedType(deducedVariableType, contextSymbolId, autoTypeKeywordLocation);
@@ -636,7 +636,7 @@ void CxxAstVisitorComponentIndexer::visitUsingDirectiveDecl(clang::UsingDirectiv
 			ReferenceKind::USAGE,
 			symbolId,
 			getOrCreateSymbolId(
-				getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext(),
+				getAstVisitor()->getContextComponent()->getContext(),
 				NameHierarchy(
 					getAstVisitor()
 						->getCanonicalFilePathCache()
@@ -657,7 +657,7 @@ void CxxAstVisitorComponentIndexer::visitUsingDecl(clang::UsingDecl* d)
 			ReferenceKind::USAGE,
 			getOrCreateSymbolId(d),
 			getOrCreateSymbolId(
-				getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext(),
+				getAstVisitor()->getContextComponent()->getContext(),
 				NameHierarchy(
 					getAstVisitor()
 						->getCanonicalFilePathCache()
@@ -797,24 +797,13 @@ void CxxAstVisitorComponentIndexer::visitTypeLoc(clang::TypeLoc tl)
 
 			const ParseLocation parseLocation = getParseLocation(loc);
 
-			m_client->recordReference(
-				getAstVisitor()->getComponent<CxxAstVisitorComponentTypeRefKind>()->isTraversingInheritance()
-					? ReferenceKind::INHERITANCE
-					: ReferenceKind::TYPE_USAGE,
-				symbolId,
-				getOrCreateSymbolId(
-					getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext(
-						1)),	// we skip the last element because it refers to this typeloc.
+			m_client->recordReference(getAstVisitor()->getTypeRefKindComponent()->isTraversingInheritance() ? ReferenceKind::INHERITANCE : ReferenceKind::TYPE_USAGE,
+				symbolId, getOrCreateSymbolId(getAstVisitor()->getContextComponent()->getContext(1)),	// we skip the last element because it refers to this typeloc.
 				parseLocation);
 
-			if (getAstVisitor()
-					->getComponent<CxxAstVisitorComponentTypeRefKind>()
-					->isTraversingTemplateArgument())
+			if (getAstVisitor()->getTypeRefKindComponent()->isTraversingTemplateArgument())
 			{
-				if (const clang::NamedDecl* namedContextDecl =
-						getAstVisitor()
-							->getComponent<CxxAstVisitorComponentContext>()
-							->getTopmostContextDecl(2))
+				if (const clang::NamedDecl* namedContextDecl = getAstVisitor()->getContextComponent()->getTopmostContextDecl(2))
 				{
 					m_client->recordReference(
 						ReferenceKind::TYPE_USAGE,
@@ -862,7 +851,7 @@ void CxxAstVisitorComponentIndexer::visitDeclRefExpr(clang::DeclRefExpr* s)
 			{
 				m_client->recordSymbolKind(symbolId, SymbolKind::FUNCTION);
 			}
-			const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext());
+			const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getContextComponent()->getContext());
 			m_client->recordReference(refKind, symbolId, contextSymbolId, getParseLocation(s->getLocation()));
 		}
 	}
@@ -873,7 +862,7 @@ void CxxAstVisitorComponentIndexer::visitMemberExpr(clang::MemberExpr* s)
 	if (getAstVisitor()->shouldVisitReference(s->getMemberLoc()))
 	{
 		const Id symbolId = getOrCreateSymbolId(s->getMemberDecl());
-		const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext());
+		const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getContextComponent()->getContext());
 		const ReferenceKind refKind = consumeDeclRefContextKind();
 
 		if (refKind == ReferenceKind::CALL)
@@ -936,7 +925,7 @@ void CxxAstVisitorComponentIndexer::visitCXXConstructExpr(clang::CXXConstructExp
 			refKind,
 			symbolId,
 			getOrCreateSymbolId(
-				getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext()),
+				getAstVisitor()->getContextComponent()->getContext()),
 			getParseLocation(loc));
 	}
 }
@@ -961,7 +950,7 @@ void CxxAstVisitorComponentIndexer::visitCXXDeleteExpr(clang::CXXDeleteExpr* s)
 						ReferenceKind::CALL,
 						symbolId,
 						getOrCreateSymbolId(
-							getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext()),
+							getAstVisitor()->getContextComponent()->getContext()),
 						getParseLocation(s->getBeginLoc()));
 				}
 			}
@@ -1011,7 +1000,7 @@ void CxxAstVisitorComponentIndexer::visitConstructorInitializer(clang::CXXCtorIn
 				ReferenceKind::USAGE,
 				getOrCreateSymbolId(memberDecl),
 				getOrCreateSymbolId(
-					getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext()),
+					getAstVisitor()->getContextComponent()->getContext()),
 				getParseLocation(init->getMemberLocation()));
 		}
 	}
@@ -1062,7 +1051,7 @@ void CxxAstVisitorComponentIndexer::recordNamedConceptReference(const ConceptRef
 	if (const ConceptDecl *conceptDecl = conceptReference->getNamedConcept())
 	{
 		const Id conceptDeclId = getOrCreateSymbolId(conceptDecl);
-		const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext());
+		const Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getContextComponent()->getContext());
 		const ParseLocation conceptNameLocation = getParseLocation(conceptReference->getLocation());
 
 		m_client->recordReference(ReferenceKind::USAGE, conceptDeclId, contextSymbolId, conceptNameLocation);
@@ -1091,7 +1080,7 @@ void CxxAstVisitorComponentIndexer::recordNonTrivialDestructorCalls(const Functi
 	auto recordDestructorCall = [this](const FunctionDecl *functionDecl, const CXXDestructorDecl *destructorDecl)
 	{
 		Id referencedSymbolId = getOrCreateSymbolId(destructorDecl);
-		Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getComponent<CxxAstVisitorComponentContext>()->getContext());
+		Id contextSymbolId = getOrCreateSymbolId(getAstVisitor()->getContextComponent()->getContext());
 		// functionDecl->getLocation: The function name
 		// functionDecl->getBeginLoc: Begin of function
 		// functionDecl->getEndLoc: End of function
@@ -1234,8 +1223,7 @@ std::string CxxAstVisitorComponentIndexer::getLocalSymbolName(const clang::Sourc
 
 ReferenceKind CxxAstVisitorComponentIndexer::consumeDeclRefContextKind()
 {
-	CxxAstVisitorComponentTypeRefKind* typeRefKindComponent =
-		getAstVisitor()->getComponent<CxxAstVisitorComponentTypeRefKind>();
+	CxxAstVisitorComponentTypeRefKind* typeRefKindComponent = getAstVisitor()->getTypeRefKindComponent();
 	if (typeRefKindComponent->isTraversingInheritance())
 	{
 		return ReferenceKind::INHERITANCE;
@@ -1245,7 +1233,7 @@ ReferenceKind CxxAstVisitorComponentIndexer::consumeDeclRefContextKind()
 		return ReferenceKind::TYPE_USAGE;
 	}
 
-	return getAstVisitor()->getComponent<CxxAstVisitorComponentDeclRefKind>()->getReferenceKind();
+	return getAstVisitor()->getDeclRefKindComponent()->getReferenceKind();
 }
 
 Id CxxAstVisitorComponentIndexer::getOrCreateSymbolId(const clang::NamedDecl* decl)

@@ -33,28 +33,19 @@ CxxAstVisitor::CxxAstVisitor(
 {
 }
 
-template <>
-CxxAstVisitorComponentContext* CxxAstVisitor::getComponent()
+CxxAstVisitorComponentContext *CxxAstVisitor::getContextComponent()
 {
 	return &m_contextComponent;
 }
 
-template <>
-CxxAstVisitorComponentTypeRefKind* CxxAstVisitor::getComponent()
+CxxAstVisitorComponentTypeRefKind *CxxAstVisitor::getTypeRefKindComponent()
 {
 	return &m_typeRefKindComponent;
 }
 
-template <>
-CxxAstVisitorComponentDeclRefKind* CxxAstVisitor::getComponent()
+CxxAstVisitorComponentDeclRefKind *CxxAstVisitor::getDeclRefKindComponent()
 {
 	return &m_declRefKindComponent;
-}
-
-template <>
-CxxAstVisitorComponentIndexer* CxxAstVisitor::getComponent()
-{
-	return &m_indexerComponent;
 }
 
 CanonicalFilePathCache* CxxAstVisitor::getCanonicalFilePathCache() const
@@ -759,3 +750,4 @@ bool CxxAstVisitor::isLocatedInProjectFile(clang::SourceLocation loc) const
 	const clang::SourceManager& sourceManager = m_astContext->getSourceManager();
 	return m_canonicalFilePathCache->isProjectFile(sourceManager.getFileID(loc), sourceManager);
 }
+

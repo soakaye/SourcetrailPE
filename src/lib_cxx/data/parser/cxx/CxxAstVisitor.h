@@ -46,8 +46,11 @@ public:
 		std::shared_ptr<IndexerStateInfo> indexerStateInfo);
 	virtual ~CxxAstVisitor() = default;
 
-	template <typename T>
-	T* getComponent();
+	CxxAstVisitorComponentDeclRefKind *getDeclRefKindComponent();
+
+	CxxAstVisitorComponentTypeRefKind *getTypeRefKindComponent();
+
+	CxxAstVisitorComponentContext *getContextComponent();
 
 	CanonicalFilePathCache* getCanonicalFilePathCache() const;
 
@@ -191,16 +194,5 @@ protected:
 	CxxAstVisitorComponentBraceRecorder m_braceRecorderComponent;
 };
 
-template <>
-CxxAstVisitorComponentContext* CxxAstVisitor::getComponent();
-
-template <>
-CxxAstVisitorComponentTypeRefKind* CxxAstVisitor::getComponent();
-
-template <>
-CxxAstVisitorComponentDeclRefKind* CxxAstVisitor::getComponent();
-
-template <>
-CxxAstVisitorComponentIndexer* CxxAstVisitor::getComponent();
 
 #endif	  // CXX_AST_VISITOR_H
