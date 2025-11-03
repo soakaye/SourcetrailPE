@@ -26,7 +26,8 @@ This is a **fork** of the Sourcetrail project and I want to keep this project at
 # :star: Sponsoring
 
 If you like the changes I've done so far, then please consider [sponsoring me](https://github.com/sponsors/petermost). 
-As a sponser you have access to the following **binary releases**:
+
+As a **10$ monthly sponsor** you have access to the following **binary releases**:
 
 |Platform|Packaging|Build|
 |--------|---------|-----|
