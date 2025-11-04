@@ -21,10 +21,10 @@
 #include "QtGraphNodeQualifier.h"
 #include "QtGraphNodeText.h"
 #include "QtGraphicsView.h"
+#include "QtResources.h"
 #include "QtSelfRefreshIconButton.h"
 #include "QtViewWidgetWrapper.h"
 #include "utilityQt.h"
-#include "QtResources.h"
 
 #include <QBoxLayout>
 #include <QFrame>
@@ -41,21 +41,21 @@
 
 using namespace utility;
 
-QtGraphView::QtGraphView(ViewLayout* viewLayout)
+QtGraphView::QtGraphView(ViewLayout *viewLayout)
 	: GraphView(viewLayout)
 	, m_focusHandler(this)
 {
 	setWidgetWrapper(std::make_shared<QtViewWidgetWrapper>(new QFrame()));
 
-	QWidget* widget = QtViewWidgetWrapper::getWidgetOfView(this);
+	QWidget *widget = QtViewWidgetWrapper::getWidgetOfView(this);
 
-	QBoxLayout* layout = new QBoxLayout(QBoxLayout::TopToBottom);
+	QBoxLayout *layout = new QBoxLayout(QBoxLayout::TopToBottom);
 	layout->setContentsMargins(0, 0, 0, 0);
 	layout->setSpacing(0);
 	widget->setLayout(layout);
 
-	QGraphicsScene* scene = new QGraphicsScene(widget);
-	QtGraphicsView* view = new QtGraphicsView(&m_focusHandler, widget);
+	QGraphicsScene *scene = new QGraphicsScene(widget);
+	QtGraphicsView *view = new QtGraphicsView(&m_focusHandler, widget);
 	view->setScene(scene);
 	view->setDragMode(QGraphicsView::ScrollHandDrag);
 	view->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
@@ -65,8 +65,14 @@ QtGraphView::QtGraphView(ViewLayout* viewLayout)
 
 	connect(view, &QtGraphicsView::emptySpaceClicked, this, &QtGraphView::clickedInEmptySpace);
 	connect(view, &QtGraphicsView::resized, this, &QtGraphView::resized);
-	connect(view, &QtGraphicsView::focusIn, [this]() { setNavigationFocus(true); });
-	connect(view, &QtGraphicsView::focusOut, [this]() { setNavigationFocus(false); });
+	connect(view, &QtGraphicsView::focusIn, [this]()
+	{
+		setNavigationFocus(true);
+	});
+	connect(view, &QtGraphicsView::focusOut, [this]()
+	{
+		setNavigationFocus(false);
+	});
 
 	m_scrollSpeedChangeListenerHorizontal.setScrollBar(view->horizontalScrollBar());
 	m_scrollSpeedChangeListenerVertical.setScrollBar(view->verticalScrollBar());
@@ -76,12 +82,12 @@ QtGraphView::QtGraphView(ViewLayout* viewLayout)
 
 	// trail controls
 	{
-		QStackedLayout* stack = new QStackedLayout();
+		QStackedLayout *stack = new QStackedLayout();
 
 		{
 			m_expandButton = new QtSelfRefreshIconButton(QLatin1String(""), QtResources::GRAPH_VIEW_GRAPH, "search/button");
 			m_expandButton->setObjectName(QStringLiteral("expand_button"));
-			m_expandButton->setToolTip(QStringLiteral("show trail controls"));
+			m_expandButton->setToolTip(tr("show trail controls"));
 			m_expandButton->setIconSize(QSize(16, 16));
 			m_expandButton->setGeometry(0, 0, 26, 26);
 			connect(m_expandButton, &QPushButton::clicked, this, &QtGraphView::clickedExpand);
@@ -89,7 +95,7 @@ QtGraphView::QtGraphView(ViewLayout* viewLayout)
 		}
 
 		{
-			QWidget* ui = new QWidget();
+			QWidget *ui = new QWidget();
 			ui->setGeometry(0, 0, 26, 210);
 			stack->addWidget(ui);
 
@@ -172,10 +178,12 @@ QtGraphView::QtGraphView(ViewLayout* viewLayout)
 		m_groupFileButton->setIconSize(QSize(14, 14));
 		m_groupNamespaceButton->setIconSize(QSize(14, 14));
 
-		connect(m_groupFileButton, &QPushButton::clicked, [this]() {
+		connect(m_groupFileButton, &QPushButton::clicked, [this]()
+		{
 			groupingUpdated(m_groupFileButton);
 		});
-		connect(m_groupNamespaceButton, &QPushButton::clicked, [this]() {
+		connect(m_groupNamespaceButton, &QPushButton::clicked, [this]()
+		{
 			groupingUpdated(m_groupNamespaceButton);
 		});
 
@@ -189,11 +197,10 @@ QtGraphView::QtGraphView(ViewLayout* viewLayout)
 			m_groupNamespaceButton->setChecked(true);
 		}
 
-
 		m_groupWidget = new QWidget(widget);
 		m_groupWidget->setGeometry(38, 8, 54, 26);
 
-		QHBoxLayout* layout = new QHBoxLayout();
+		QHBoxLayout *layout = new QHBoxLayout();
 		layout->setContentsMargins(0, 0, 0, 0);
 		layout->setSpacing(2);
 
@@ -204,7 +211,9 @@ QtGraphView::QtGraphView(ViewLayout* viewLayout)
 	}
 }
 
-void QtGraphView::createWidgetWrapper() {}
+void QtGraphView::createWidgetWrapper()
+{
+}
 
 void QtGraphView::refreshView()
 {
@@ -230,12 +239,13 @@ bool QtGraphView::isVisible() const
 	return QtViewWidgetWrapper::getWidgetOfView(this)->isVisible();
 }
 
-void QtGraphView::findMatches(ScreenSearchSender* sender, const std::string& query)
+void QtGraphView::findMatches(ScreenSearchSender *sender, const std::string &query)
 {
-	m_onQtThread([sender, query, this]() {
+	m_onQtThread([sender, query, this]()
+	{
 		m_matchedNodes.clear();
 
-		for (QtGraphNode* node: m_oldNodes)
+		for (QtGraphNode *node : m_oldNodes)
 		{
 			node->matchNameRecursive(query, &m_matchedNodes);
 		}
@@ -246,13 +256,14 @@ void QtGraphView::findMatches(ScreenSearchSender* sender, const std::string& que
 
 void QtGraphView::activateMatch(size_t matchIndex)
 {
-	m_onQtThread([matchIndex, this]() {
+	m_onQtThread([matchIndex, this]()
+	{
 		if (matchIndex >= m_matchedNodes.size())
 		{
 			return;
 		}
 
-		QtGraphNode* node = m_matchedNodes[matchIndex];
+		QtGraphNode *node = m_matchedNodes[matchIndex];
 
 		node->setActiveMatch(true);
 		node->updateStyle();
@@ -263,13 +274,14 @@ void QtGraphView::activateMatch(size_t matchIndex)
 
 void QtGraphView::deactivateMatch(size_t matchIndex)
 {
-	m_onQtThread([matchIndex, this]() {
+	m_onQtThread([matchIndex, this]()
+	{
 		if (matchIndex >= m_matchedNodes.size())
 		{
 			return;
 		}
 
-		QtGraphNode* node = m_matchedNodes[matchIndex];
+		QtGraphNode *node = m_matchedNodes[matchIndex];
 		node->setActiveMatch(false);
 		node->updateStyle();
 	});
@@ -282,8 +294,9 @@ void QtGraphView::clearMatches()
 		return;
 	}
 
-	m_onQtThread([this]() {
-		for (QtGraphNode* node: m_matchedNodes)
+	m_onQtThread([this]()
+	{
+		for (QtGraphNode *node : m_matchedNodes)
 		{
 			node->removeNameMatch();
 		}
@@ -292,13 +305,11 @@ void QtGraphView::clearMatches()
 	});
 }
 
-void QtGraphView::rebuildGraph(
-	std::shared_ptr<Graph> graph,
-	const std::vector<std::shared_ptr<DummyNode>>& nodes,
-	const std::vector<std::shared_ptr<DummyEdge>>& edges,
-	const GraphParams params)
+void QtGraphView::rebuildGraph(std::shared_ptr<Graph> graph, const std::vector<std::shared_ptr<DummyNode>> &nodes,
+	const std::vector<std::shared_ptr<DummyEdge>> &edges, const GraphParams params)
 {
-	m_onQtThread([=, this]() {
+	m_onQtThread([=, this]()
+	{
 		if (isTransitioning())
 		{
 			m_transition->stop();
@@ -313,14 +324,13 @@ void QtGraphView::rebuildGraph(
 
 		m_matchedNodes.clear();
 
-		QGraphicsView* view = getView();
-
+		QGraphicsView *view = getView();
 
 		// create nodes
 		size_t activeNodeCount = 0;
-		for (unsigned int i = 0; i < nodes.size(); i++)
+		for (const std::shared_ptr<DummyNode> &node : nodes)
 		{
-			activeNodeCount += nodes[i]->getActiveSubNodeCount();
+			activeNodeCount += node->getActiveSubNodeCount();
 		}
 
 		Id oldActiveTokenId = m_oldActiveNode ? m_oldActiveNode->getTokenId() : 0;
@@ -329,13 +339,12 @@ void QtGraphView::rebuildGraph(
 		m_oldActiveNode = nullptr;
 		m_virtualNodeRects.clear();
 
-		for (unsigned int i = 0; i < nodes.size(); i++)
+		for (const std::shared_ptr<DummyNode> &node : nodes)
 		{
-			QtGraphNode* node = createNodeRecursive(
-				view, nullptr, nodes[i].get(), activeNodeCount > 1, !params.disableInteraction);
-			if (node)
+			QtGraphNode *newNode = createNodeRecursive(view, nullptr, node.get(), activeNodeCount > 1, !params.disableInteraction);
+			if (newNode)
 			{
-				m_nodes.push_back(node);
+				m_nodes.push_back(newNode);
 			}
 		}
 
@@ -348,12 +357,11 @@ void QtGraphView::rebuildGraph(
 
 		// move graph to center
 		QPointF center = itemsBoundingRect(m_nodes).center();
-		const Vec2i o = GraphViewStyle::alignOnRaster(
-			Vec2i(static_cast<int>(center.x()), static_cast<int>(center.y())));
+		const Vec2i o = GraphViewStyle::alignOnRaster(Vec2i(static_cast<int>(center.x()), static_cast<int>(center.y())));
 		QPointF offset = QPointF(o.x, o.y);
 		m_sceneRectOffset = offset - center;
 
-		for (QtGraphNode* node: m_nodes)
+		for (QtGraphNode *node : m_nodes)
 		{
 			node->setPos(node->pos() - offset);
 		}
@@ -364,21 +372,14 @@ void QtGraphView::rebuildGraph(
 		// create edges
 		Graph::TrailMode trailMode = m_graph ? m_graph->getTrailMode() : Graph::TRAIL_NONE;
 		std::set<Id> visibleEdgeIds;
-		for (const std::shared_ptr<DummyEdge>& edge: edges)
+		for (const std::shared_ptr<DummyEdge> &edge : edges)
 		{
 			if (!edge->data || !edge->data->isType(Edge::EDGE_BUNDLED_EDGES))
 			{
-				createEdge(
-					view,
-					edge.get(),
-					&visibleEdgeIds,
-					trailMode,
-					offset,
-					params.bezierEdges,
-					!params.disableInteraction);
+				createEdge(view, edge.get(), &visibleEdgeIds, trailMode, offset, params.bezierEdges, !params.disableInteraction);
 			}
 		}
-		for (const std::shared_ptr<DummyEdge>& edge: edges)
+		for (const std::shared_ptr<DummyEdge> &edge : edges)
 		{
 			if (edge->data && edge->data->isType(Edge::EDGE_BUNDLED_EDGES))
 			{
@@ -404,8 +405,7 @@ void QtGraphView::rebuildGraph(
 		m_scrollToTop = params.scrollToTop;
 		m_isIndexedList = params.isIndexedList;
 
-		if (params.animatedTransition && ApplicationSettings::getInstance()->getUseAnimations() &&
-			view->isVisible())
+		if (params.animatedTransition && ApplicationSettings::getInstance()->getUseAnimations() && view->isVisible())
 		{
 			createTransition();
 		}
@@ -418,18 +418,19 @@ void QtGraphView::rebuildGraph(
 
 void QtGraphView::clear()
 {
-	m_onQtThread([this]() {
+	m_onQtThread([this]()
+	{
 		m_focusHandler.clear();
 
 		m_oldActiveNode = nullptr;
 		m_activeNodes.clear();
 
-		for (QtGraphNode* node: m_oldNodes)
+		for (QtGraphNode *node : m_oldNodes)
 		{
 			node->deleteLater();
 		}
 
-		for (QtGraphEdge* edge: m_oldEdges)
+		for (QtGraphEdge *edge : m_oldEdges)
 		{
 			edge->deleteLater();
 		}
@@ -449,19 +450,20 @@ void QtGraphView::clear()
 	});
 }
 
-void QtGraphView::coFocusTokenIds(const std::vector<Id>& focusedTokenIds)
+void QtGraphView::coFocusTokenIds(const std::vector<Id> &focusedTokenIds)
 {
-	m_onQtThread([=, this]() {
-		for (const Id& tokenId: focusedTokenIds)
+	m_onQtThread([=, this]()
+	{
+		for (const Id &tokenId : focusedTokenIds)
 		{
-			QtGraphNode* node = QtGraphNode::findNodeRecursive(m_oldNodes, tokenId);
+			QtGraphNode *node = QtGraphNode::findNodeRecursive(m_oldNodes, tokenId);
 			if (node && !node->getIsFocused())
 			{
 				node->coFocusIn();
 				continue;
 			}
 
-			for (QtGraphEdge* edge: m_oldEdges)
+			for (QtGraphEdge *edge : m_oldEdges)
 			{
 				if (edge->getData() && edge->getData()->getId() == tokenId)
 				{
@@ -473,19 +475,20 @@ void QtGraphView::coFocusTokenIds(const std::vector<Id>& focusedTokenIds)
 	});
 }
 
-void QtGraphView::deCoFocusTokenIds(const std::vector<Id>& defocusedTokenIds)
+void QtGraphView::deCoFocusTokenIds(const std::vector<Id> &defocusedTokenIds)
 {
-	m_onQtThread([=, this]() {
-		for (const Id& tokenId: defocusedTokenIds)
+	m_onQtThread([=, this]()
+	{
+		for (const Id &tokenId : defocusedTokenIds)
 		{
-			QtGraphNode* node = QtGraphNode::findNodeRecursive(m_oldNodes, tokenId);
+			QtGraphNode *node = QtGraphNode::findNodeRecursive(m_oldNodes, tokenId);
 			if (node && !node->getIsFocused())
 			{
 				node->coFocusOut();
 				continue;
 			}
 
-			for (QtGraphEdge* edge: m_oldEdges)
+			for (QtGraphEdge *edge : m_oldEdges)
 			{
 				if (edge->getData() && edge->getData()->getId() == tokenId)
 				{
@@ -499,17 +502,18 @@ void QtGraphView::deCoFocusTokenIds(const std::vector<Id>& defocusedTokenIds)
 
 void QtGraphView::resizeView()
 {
-	m_onQtThread([this]() { doResize(); });
+	m_onQtThread([this]()
+	{
+		doResize();
+	});
 }
 
 Vec2i QtGraphView::getViewSize() const
 {
-	QtGraphicsView* view = getView();
+	QtGraphicsView *view = getView();
 
 	const float zoomFactor = view->getZoomFactor();
-	return Vec2i(
-		static_cast<int>((view->width() - 50) / zoomFactor),
-		static_cast<int>((view->height() - 100) / zoomFactor));
+	return Vec2i(static_cast<int>((view->width() - 50) / zoomFactor), static_cast<int>((view->height() - 100) / zoomFactor));
 }
 
 GroupType QtGraphView::getGrouping() const
@@ -534,7 +538,8 @@ void QtGraphView::scrollToValues(int xValue, int yValue)
 
 void QtGraphView::activateEdge(Id edgeId)
 {
-	m_onQtThread([=, this]() {
+	m_onQtThread([=, this]()
+	{
 		if (isTransitioning())
 		{
 			m_transition->stop();
@@ -542,12 +547,12 @@ void QtGraphView::activateEdge(Id edgeId)
 			finishedTransition();
 		}
 
-		for (QtGraphEdge* edge: m_oldEdges)
+		for (QtGraphEdge *edge : m_oldEdges)
 		{
 			edge->setIsActive(false);
 		}
 
-		for (QtGraphEdge* edge: m_oldEdges)
+		for (QtGraphEdge *edge : m_oldEdges)
 		{
 			if (edge->getData() && edge->getData()->getId() == edgeId)
 			{
@@ -567,7 +572,8 @@ void QtGraphView::setNavigationFocus(bool focusIn)
 
 	m_hasFocus = focusIn;
 
-	m_onQtThread([this, focusIn]() {
+	m_onQtThread([this, focusIn]()
+	{
 		focusView(focusIn);
 		m_focusHandler.focus(focusIn);
 	});
@@ -580,7 +586,7 @@ bool QtGraphView::hasNavigationFocus() const
 
 void QtGraphView::focusView(bool focusIn)
 {
-	QtGraphicsView* view = getView();
+	QtGraphicsView *view = getView();
 
 	view->blockSignals(true);
 
@@ -596,7 +602,7 @@ void QtGraphView::focusView(bool focusIn)
 	view->blockSignals(false);
 }
 
-const std::list<QtGraphNode*>& QtGraphView::getGraphNodes() const
+const std::list<QtGraphNode *> &QtGraphView::getGraphNodes() const
 {
 	if (isTransitioning())
 	{
@@ -606,7 +612,7 @@ const std::list<QtGraphNode*>& QtGraphView::getGraphNodes() const
 	return m_oldNodes;
 }
 
-const std::list<QtGraphEdge*>& QtGraphView::getGraphEdges() const
+const std::list<QtGraphEdge *> &QtGraphView::getGraphEdges() const
 {
 	if (isTransitioning())
 	{
@@ -616,14 +622,14 @@ const std::list<QtGraphEdge*>& QtGraphView::getGraphEdges() const
 	return m_oldEdges;
 }
 
-QtGraphNode* QtGraphView::getActiveNode() const
+QtGraphNode *QtGraphView::getActiveNode() const
 {
 	return m_oldActiveNode;
 }
 
-void QtGraphView::ensureNodeVisible(QtGraphNode* node)
+void QtGraphView::ensureNodeVisible(QtGraphNode *node)
 {
-	QtGraphicsView* view = getView();
+	QtGraphicsView *view = getView();
 
 	Vec4i r = node->getBoundingRect();
 	QRectF rect(r.x(), r.y(), r.z() - r.x(), r.w() - r.y());
@@ -643,10 +649,10 @@ void QtGraphView::ensureNodeVisible(QtGraphNode* node)
 
 void QtGraphView::updateScrollBars()
 {
-	QGraphicsView* view = getView();
+	QGraphicsView *view = getView();
 
-	QScrollBar* hb = view->horizontalScrollBar();
-	QScrollBar* vb = view->verticalScrollBar();
+	QScrollBar *hb = view->horizontalScrollBar();
+	QScrollBar *vb = view->verticalScrollBar();
 
 	if (m_restoreScroll)
 	{
@@ -674,15 +680,15 @@ void QtGraphView::updateScrollBars()
 
 void QtGraphView::finishedTransition()
 {
-	QGraphicsView* view = getView();
+	QGraphicsView *view = getView();
 	view->setInteractive(true);
 
-	for (QtGraphNode* node: m_nodes)
+	for (QtGraphNode *node : m_nodes)
 	{
 		node->showNodeRecursive();
 	}
 
-	for (QtGraphEdge* edge: m_edges)
+	for (QtGraphEdge *edge : m_edges)
 	{
 		edge->setOpacity(1.0f);
 	}
@@ -692,8 +698,8 @@ void QtGraphView::finishedTransition()
 
 void QtGraphView::clickedInEmptySpace()
 {
-	std::vector<QtGraphEdge*> activeEdges;
-	for (QtGraphEdge* edge: m_oldEdges)
+	std::vector<QtGraphEdge *> activeEdges;
+	for (QtGraphEdge *edge : m_oldEdges)
 	{
 		if (edge->getIsActive())
 		{
@@ -703,7 +709,7 @@ void QtGraphView::clickedInEmptySpace()
 
 	if (m_graph && m_graph->getTrailMode() != Graph::TRAIL_NONE)
 	{
-		for (QtGraphEdge* edge: activeEdges)
+		for (QtGraphEdge *edge : activeEdges)
 		{
 			edge->setIsActive(false);
 		}
@@ -716,10 +722,9 @@ void QtGraphView::clickedInEmptySpace()
 
 void QtGraphView::scrolled(int)
 {
-	QGraphicsView* view = getView();
+	QGraphicsView *view = getView();
 
-	MessageScrollGraph(view->horizontalScrollBar()->value(), view->verticalScrollBar()->value())
-		.dispatch();
+	MessageScrollGraph(view->horizontalScrollBar()->value(), view->verticalScrollBar()->value()).dispatch();
 }
 
 void QtGraphView::resized()
@@ -736,7 +741,7 @@ void QtGraphView::trailDepthChanged(int)
 {
 	if (m_trailDepthSlider->value() == m_trailDepthSlider->maximum())
 	{
-		m_trailDepthLabel->setText(QStringLiteral("inf"));
+		m_trailDepthLabel->setText(tr("inf"));
 	}
 	else
 	{
@@ -754,7 +759,7 @@ void QtGraphView::trailDepthUpdated()
 
 void QtGraphView::clickedCollapse()
 {
-	dynamic_cast<QStackedLayout*>(m_trailWidget->layout())->setCurrentIndex(0);
+	dynamic_cast<QStackedLayout *>(m_trailWidget->layout())->setCurrentIndex(0);
 
 	ApplicationSettings::getInstance()->setGraphControlsVisible(false);
 	ApplicationSettings::getInstance()->save();
@@ -762,7 +767,7 @@ void QtGraphView::clickedCollapse()
 
 void QtGraphView::clickedExpand()
 {
-	dynamic_cast<QStackedLayout*>(m_trailWidget->layout())->setCurrentIndex(1);
+	dynamic_cast<QStackedLayout *>(m_trailWidget->layout())->setCurrentIndex(1);
 
 	ApplicationSettings::getInstance()->setGraphControlsVisible(true);
 	ApplicationSettings::getInstance()->save();
@@ -783,11 +788,11 @@ void QtGraphView::clickedForwardTrail()
 	activateTrail(true);
 }
 
-void QtGraphView::groupingUpdated(QPushButton* button)
+void QtGraphView::groupingUpdated(QPushButton *button)
 {
 	(button == m_groupFileButton ? m_groupNamespaceButton : m_groupFileButton)->setChecked(false);
 
-	ApplicationSettings* appSettings = ApplicationSettings::getInstance().get();
+	ApplicationSettings *appSettings = ApplicationSettings::getInstance().get();
 	if (appSettings->getGraphGrouping() != getGrouping())
 	{
 		appSettings->setGraphGrouping(getGrouping());
@@ -797,11 +802,11 @@ void QtGraphView::groupingUpdated(QPushButton* button)
 	MessageRefreshUI().noStyleReload().dispatch();
 }
 
-void QtGraphView::performScroll(QScrollBar* scrollBar, int value) const
+void QtGraphView::performScroll(QScrollBar *scrollBar, int value) const
 {
 	if (ApplicationSettings::getInstance()->getUseAnimations() && getView()->isVisible())
 	{
-		QPropertyAnimation* anim = new QPropertyAnimation(scrollBar, "value");
+		QPropertyAnimation *anim = new QPropertyAnimation(scrollBar, "value");
 		anim->setDuration(300);
 		anim->setStartValue(scrollBar->value());
 		anim->setEndValue(value);
@@ -818,7 +823,7 @@ MessageActivateTrail QtGraphView::getMessageActivateTrail(bool forward)
 {
 	MessageActivateTrail message(0, 0, 0, 0, false);
 
-	QtGraphNodeData* node = dynamic_cast<QtGraphNodeData*>(m_oldActiveNode);
+	QtGraphNodeData *node = dynamic_cast<QtGraphNodeData *>(m_oldActiveNode);
 	if (node)
 	{
 		Edge::TypeMask edgeTypes;
@@ -915,14 +920,14 @@ void QtGraphView::switchToNewGraphData()
 
 	m_oldGraph = m_graph;
 
-	for (QtGraphNode* node: m_oldNodes)
+	for (QtGraphNode *node : m_oldNodes)
 	{
 		node->hide();
 		node->setParentItem(nullptr);
 		node->deleteLater();
 	}
 
-	for (QtGraphEdge* edge: m_oldEdges)
+	for (QtGraphEdge *edge : m_oldEdges)
 	{
 		edge->hide();
 		edge->setParentItem(nullptr);
@@ -942,7 +947,7 @@ void QtGraphView::switchToNewGraphData()
 		updateScrollBars();
 	}
 
-	QtGraphicsView* view = getView();
+	QtGraphicsView *view = getView();
 
 	// // Manually hover the item below the mouse cursor.
 	// QtGraphNode* node = view->getNodeAtCursorPosition();
@@ -976,11 +981,11 @@ void QtGraphView::switchToNewGraphData()
 	}
 }
 
-QtGraphicsView* QtGraphView::getView() const
+QtGraphicsView *QtGraphView::getView() const
 {
-	QWidget* widget = QtViewWidgetWrapper::getWidgetOfView(this);
+	QWidget *widget = QtViewWidgetWrapper::getWidgetOfView(this);
 
-	QtGraphicsView* view = widget->findChild<QtGraphicsView*>(QLatin1String(""));
+	QtGraphicsView *view = widget->findChild<QtGraphicsView *>(QLatin1String(""));
 
 	if (!view)
 	{
@@ -995,11 +1000,7 @@ void QtGraphView::doResize()
 	getView()->setSceneRect(getSceneRect(m_oldNodes));
 }
 
-QtGraphNode* QtGraphView::createNodeRecursive(
-	QGraphicsView* view,
-	QtGraphNode* parentNode,
-	const DummyNode* node,
-	bool multipleActive,
+QtGraphNode *QtGraphView::createNodeRecursive(QGraphicsView *view, QtGraphNode *parentNode, const DummyNode *node, bool multipleActive,
 	bool interactive)
 {
 	if (!node->visible)
@@ -1007,16 +1008,10 @@ QtGraphNode* QtGraphView::createNodeRecursive(
 		return nullptr;
 	}
 
-	QtGraphNode* newNode = nullptr;
+	QtGraphNode *newNode = nullptr;
 	if (node->isGraphNode())
 	{
-		newNode = new QtGraphNodeData(
-			&m_focusHandler,
-			node->data,
-			node->name,
-			node->childVisible,
-			node->getQualifierNode() != nullptr,
-			interactive);
+		newNode = new QtGraphNodeData(&m_focusHandler, node->data, node->name, node->childVisible, node->getQualifierNode() != nullptr, interactive);
 	}
 	else if (node->isAccessNode())
 	{
@@ -1024,18 +1019,11 @@ QtGraphNode* QtGraphView::createNodeRecursive(
 	}
 	else if (node->isExpandToggleNode())
 	{
-		newNode = new QtGraphNodeExpandToggle(
-			node->isExpanded(), static_cast<int>(node->invisibleSubNodeCount));
+		newNode = new QtGraphNodeExpandToggle(node->isExpanded(), static_cast<int>(node->invisibleSubNodeCount));
 	}
 	else if (node->isBundleNode())
 	{
-		newNode = new QtGraphNodeBundle(
-			&m_focusHandler,
-			node->tokenId,
-			node->getBundledNodeCount(),
-			node->bundledNodeType,
-			node->name,
-			interactive);
+		newNode = new QtGraphNodeBundle(&m_focusHandler, node->tokenId, node->getBundledNodeCount(), node->bundledNodeType, node->name, interactive);
 	}
 	else if (node->isQualifierNode())
 	{
@@ -1047,12 +1035,7 @@ QtGraphNode* QtGraphView::createNodeRecursive(
 	}
 	else if (node->isGroupNode())
 	{
-		newNode = new QtGraphNodeGroup(
-			&m_focusHandler,
-			node->tokenId,
-			node->name,
-			node->groupType,
-			node->interactive && interactive);
+		newNode = new QtGraphNodeGroup(&m_focusHandler, node->tokenId, node->name, node->groupType, node->interactive && interactive);
 	}
 	else
 	{
@@ -1087,13 +1070,12 @@ QtGraphNode* QtGraphView::createNodeRecursive(
 		m_activeNodes.push_back(newNode);
 	}
 
-	for (unsigned int i = 0; i < node->subNodes.size(); i++)
+	for (const std::shared_ptr<DummyNode> &subNode : node->subNodes)
 	{
-		QtGraphNode* subNode = createNodeRecursive(
-			view, newNode, node->subNodes[i].get(), multipleActive, interactive);
-		if (subNode)
+		QtGraphNode *newSubNode = createNodeRecursive(view, newNode, subNode.get(), multipleActive, interactive);
+		if (newSubNode)
 		{
-			newNode->addSubNode(subNode);
+			newNode->addSubNode(newSubNode);
 		}
 	}
 
@@ -1102,35 +1084,21 @@ QtGraphNode* QtGraphView::createNodeRecursive(
 	return newNode;
 }
 
-QtGraphEdge* QtGraphView::createEdge(
-	QGraphicsView* view,
-	const DummyEdge* edge,
-	std::set<Id>* visibleEdgeIds,
-	Graph::TrailMode trailMode,
-	QPointF pathOffset,
-	bool useBezier,
-	bool interactive)
+QtGraphEdge *QtGraphView::createEdge(QGraphicsView *view, const DummyEdge *edge, std::set<Id> *visibleEdgeIds, Graph::TrailMode trailMode,
+	QPointF pathOffset, bool useBezier, bool interactive)
 {
 	if (!edge->visible)
 	{
 		return nullptr;
 	}
 
-	QtGraphNode* owner = QtGraphNode::findNodeRecursive(m_nodes, edge->ownerId);
-	QtGraphNode* target = QtGraphNode::findNodeRecursive(m_nodes, edge->targetId);
+	QtGraphNode *owner = QtGraphNode::findNodeRecursive(m_nodes, edge->ownerId);
+	QtGraphNode *target = QtGraphNode::findNodeRecursive(m_nodes, edge->targetId);
 
 	if (owner != nullptr && target != nullptr)
 	{
-		QtGraphEdge* qtEdge = new QtGraphEdge(
-			&m_focusHandler,
-			owner,
-			target,
-			edge->data,
-			edge->getWeight(),
-			edge->active,
-			interactive,
-			edge->layoutHorizontal,
-			edge->getDirection());
+		QtGraphEdge *qtEdge = new QtGraphEdge(&m_focusHandler, owner, target, edge->data, edge->getWeight(), edge->active, interactive,
+			edge->layoutHorizontal, edge->getDirection());
 
 		if (trailMode != Graph::TRAIL_NONE)
 		{
@@ -1143,10 +1111,9 @@ QtGraphEdge* QtGraphView::createEdge(
 				path[i].w = static_cast<int>(path[i].w - pathOffset.y());
 			}
 
-			for (const Vec4i& rect: path)
+			for (const Vec4i &rect : path)
 			{
-				m_virtualNodeRects.push_back(
-					QRectF(QPointF(rect.x(), rect.y()), QPointF(rect.z(), rect.w())));
+				m_virtualNodeRects.push_back(QRectF(QPointF(rect.x(), rect.y()), QPointF(rect.z(), rect.w())));
 			}
 
 			qtEdge->setIsTrailEdge(path, trailMode == Graph::TRAIL_HORIZONTAL);
@@ -1157,7 +1124,6 @@ QtGraphEdge* QtGraphView::createEdge(
 		}
 
 		qtEdge->updateLine();
-
 
 		owner->addOutEdge(qtEdge);
 		target->addInEdge(qtEdge);
@@ -1177,8 +1143,7 @@ QtGraphEdge* QtGraphView::createEdge(
 	return nullptr;
 }
 
-QtGraphEdge* QtGraphView::createBundledEdgesEdge(
-	QGraphicsView* view, const DummyEdge* edge, std::set<Id>* visibleEdgeIds, bool interactive)
+QtGraphEdge *QtGraphView::createBundledEdgesEdge(QGraphicsView *view, const DummyEdge *edge, std::set<Id> *visibleEdgeIds, bool interactive)
 {
 	if (!edge->visible)
 	{
@@ -1186,9 +1151,8 @@ QtGraphEdge* QtGraphView::createBundledEdgesEdge(
 	}
 
 	bool allVisible = true;
-	std::set<Id> bundledEdgesIds =
-		edge->data->getComponent<TokenComponentBundledEdges>()->getBundledEdgesIds();
-	for (Id edgeId: bundledEdgesIds)
+	std::set<Id> bundledEdgesIds = edge->data->getComponent<TokenComponentBundledEdges>()->getBundledEdgesIds();
+	for (Id edgeId : bundledEdgesIds)
 	{
 		if (visibleEdgeIds->find(edgeId) == visibleEdgeIds->end())
 		{
@@ -1205,21 +1169,21 @@ QtGraphEdge* QtGraphView::createBundledEdgesEdge(
 	return createEdge(view, edge, visibleEdgeIds, Graph::TRAIL_NONE, QPointF(), false, interactive);
 }
 
-QRectF QtGraphView::itemsBoundingRect(const std::list<QtGraphNode*>& items)
+QRectF QtGraphView::itemsBoundingRect(const std::list<QtGraphNode *> &items)
 {
 	QRectF boundingRect;
-	for (const QtGraphNode* item: items)
+	for (const QtGraphNode *item : items)
 	{
 		boundingRect |= item->sceneBoundingRect();
 	}
 	return boundingRect;
 }
 
-QRectF QtGraphView::getSceneRect(const std::list<QtGraphNode*>& items) const
+QRectF QtGraphView::getSceneRect(const std::list<QtGraphNode *> &items) const
 {
 	QRectF sceneRect = itemsBoundingRect(items);
 
-	for (const QRectF& rect: m_virtualNodeRects)
+	for (const QRectF &rect : m_virtualNodeRects)
 	{
 		sceneRect |= rect;
 	}
@@ -1227,9 +1191,9 @@ QRectF QtGraphView::getSceneRect(const std::list<QtGraphNode*>& items) const
 	return sceneRect.adjusted(-75, -75, 75, 75).translated(m_sceneRectOffset);
 }
 
-void QtGraphView::centerNode(QtGraphNode* node)
+void QtGraphView::centerNode(QtGraphNode *node)
 {
-	QtGraphicsView* view = getView();
+	QtGraphicsView *view = getView();
 
 	Vec2i pos = node->getPosition();
 	Vec2i size = node->getSize();
@@ -1249,40 +1213,25 @@ void QtGraphView::centerNode(QtGraphNode* node)
 	view->ensureVisibleAnimated(rect, 100, 100);
 }
 
-void QtGraphView::compareNodesRecursive(
-	std::list<QtGraphNode*> newSubNodes,
-	std::list<QtGraphNode*> oldSubNodes,
-	std::list<QtGraphNode*>* appearingNodes,
-	std::list<QtGraphNode*>* vanishingNodes,
-	std::vector<std::pair<QtGraphNode*, QtGraphNode*>>* remainingNodes)
+void QtGraphView::compareNodesRecursive(std::list<QtGraphNode *> newSubNodes, std::list<QtGraphNode *> oldSubNodes,
+	std::list<QtGraphNode *> *appearingNodes, std::list<QtGraphNode *> *vanishingNodes,
+	std::vector<std::pair<QtGraphNode *, QtGraphNode *>> *remainingNodes)
 {
-	for (std::list<QtGraphNode*>::iterator it = newSubNodes.begin(); it != newSubNodes.end(); it++)
+	for (auto it = newSubNodes.begin(); it != newSubNodes.end(); it++)
 	{
 		bool remains = false;
 
-		for (std::list<QtGraphNode*>::iterator it2 = oldSubNodes.begin(); it2 != oldSubNodes.end();
-			 it2++)
+		for (auto it2 = oldSubNodes.begin(); it2 != oldSubNodes.end(); it2++)
 		{
-			if (((*it)->isDataNode() && (*it2)->isDataNode() &&
-				 (*it)->getTokenId() == (*it2)->getTokenId()) ||
-				((*it)->isAccessNode() && (*it2)->isAccessNode() &&
-				 dynamic_cast<QtGraphNodeAccess*>(*it)->getAccessKind() ==
-					 dynamic_cast<QtGraphNodeAccess*>(*it2)->getAccessKind()) ||
-				((*it)->isExpandToggleNode() && (*it2)->isExpandToggleNode()) ||
-				((*it)->isBundleNode() && (*it2)->isBundleNode() &&
-				 (*it)->getTokenId() == (*it2)->getTokenId()) ||
-				((*it)->isQualifierNode() && (*it2)->isQualifierNode() &&
-				 (*it)->getTokenId() == (*it2)->getTokenId()) ||
-				((*it)->isGroupNode() && (*it2)->isGroupNode() &&
-				 (*it)->getName() == (*it2)->getName()))
+			if (((*it)->isDataNode() && (*it2)->isDataNode() && (*it)->getTokenId() == (*it2)->getTokenId())
+				|| ((*it)->isAccessNode() && (*it2)->isAccessNode() && dynamic_cast<QtGraphNodeAccess *>(*it)->getAccessKind() == dynamic_cast<QtGraphNodeAccess *>(*it2)->getAccessKind())
+				|| ((*it)->isExpandToggleNode() && (*it2)->isExpandToggleNode())
+				|| ((*it)->isBundleNode() && (*it2)->isBundleNode() && (*it)->getTokenId() == (*it2)->getTokenId())
+				|| ((*it)->isQualifierNode() && (*it2)->isQualifierNode() && (*it)->getTokenId() == (*it2)->getTokenId())
+				|| ((*it)->isGroupNode() && (*it2)->isGroupNode() && (*it)->getName() == (*it2)->getName()))
 			{
-				remainingNodes->push_back(std::pair<QtGraphNode*, QtGraphNode*>(*it, *it2));
-				compareNodesRecursive(
-					(*it)->getSubNodes(),
-					(*it2)->getSubNodes(),
-					appearingNodes,
-					vanishingNodes,
-					remainingNodes);
+				remainingNodes->push_back(std::pair<QtGraphNode *, QtGraphNode *>(*it, *it2));
+				compareNodesRecursive((*it)->getSubNodes(), (*it2)->getSubNodes(), appearingNodes, vanishingNodes, remainingNodes);
 
 				oldSubNodes.erase(it2);
 				remains = true;
@@ -1296,7 +1245,7 @@ void QtGraphView::compareNodesRecursive(
 		}
 	}
 
-	for (QtGraphNode* node: oldSubNodes)
+	for (QtGraphNode *node : oldSubNodes)
 	{
 		vanishingNodes->push_back(node);
 	}
@@ -1304,19 +1253,18 @@ void QtGraphView::compareNodesRecursive(
 
 void QtGraphView::createTransition()
 {
-	std::list<QtGraphNode*> appearingNodes;
-	std::list<QtGraphNode*> vanishingNodes;
-	std::vector<std::pair<QtGraphNode*, QtGraphNode*>> remainingNodes;
+	std::list<QtGraphNode *> appearingNodes;
+	std::list<QtGraphNode *> vanishingNodes;
+	std::vector<std::pair<QtGraphNode *, QtGraphNode *>> remainingNodes;
 
 	compareNodesRecursive(m_nodes, m_oldNodes, &appearingNodes, &vanishingNodes, &remainingNodes);
 
 	if (!vanishingNodes.size() && !appearingNodes.size())
 	{
 		bool nodesMoved = false;
-		for (const std::pair<QtGraphNode*, QtGraphNode*>& p: remainingNodes)
+		for (const std::pair<QtGraphNode *, QtGraphNode *> &p : remainingNodes)
 		{
-			if (p.first->getPosition() != p.second->getPosition() &&
-				p.first->getSize() != p.second->getSize())
+			if (p.first->getPosition() != p.second->getPosition() && p.first->getSize() != p.second->getSize())
 			{
 				nodesMoved = true;
 			}
@@ -1329,7 +1277,7 @@ void QtGraphView::createTransition()
 		}
 	}
 
-	QGraphicsView* view = getView();
+	QGraphicsView *view = getView();
 	view->setInteractive(false);
 
 	m_transition = std::make_shared<QSequentialAnimationGroup>();
@@ -1337,11 +1285,11 @@ void QtGraphView::createTransition()
 	// fade out
 	if (vanishingNodes.size() || m_oldEdges.size())
 	{
-		QParallelAnimationGroup* vanish = new QParallelAnimationGroup();
+		QParallelAnimationGroup *vanish = new QParallelAnimationGroup();
 
-		for (QtGraphNode* node: vanishingNodes)
+		for (QtGraphNode *node : vanishingNodes)
 		{
-			QPropertyAnimation* anim = new QPropertyAnimation(node, QByteArrayLiteral("opacity"));
+			QPropertyAnimation *anim = new QPropertyAnimation(node, QByteArrayLiteral("opacity"));
 			anim->setDuration(300);
 			anim->setStartValue(1.0f);
 			anim->setEndValue(0.0f);
@@ -1349,9 +1297,9 @@ void QtGraphView::createTransition()
 			vanish->addAnimation(anim);
 		}
 
-		for (QtGraphEdge* edge: m_oldEdges)
+		for (QtGraphEdge *edge : m_oldEdges)
 		{
-			QPropertyAnimation* anim = new QPropertyAnimation(edge, QByteArrayLiteral("opacity"));
+			QPropertyAnimation *anim = new QPropertyAnimation(edge, QByteArrayLiteral("opacity"));
 			anim->setDuration(150);
 			anim->setStartValue(1.0f);
 			anim->setEndValue(0.0f);
@@ -1364,14 +1312,14 @@ void QtGraphView::createTransition()
 
 	// move and scale
 	{
-		QParallelAnimationGroup* remain = new QParallelAnimationGroup();
+		QParallelAnimationGroup *remain = new QParallelAnimationGroup();
 
-		for (std::pair<QtGraphNode*, QtGraphNode*> p: remainingNodes)
+		for (std::pair<QtGraphNode *, QtGraphNode *> p : remainingNodes)
 		{
-			QtGraphNode* newNode = p.first;
-			QtGraphNode* oldNode = p.second;
+			QtGraphNode *newNode = p.first;
+			QtGraphNode *oldNode = p.second;
 
-			QPropertyAnimation* anim = new QPropertyAnimation(oldNode, QByteArrayLiteral("pos"));
+			QPropertyAnimation *anim = new QPropertyAnimation(oldNode, QByteArrayLiteral("pos"));
 			anim->setDuration(300);
 			anim->setStartValue(oldNode->pos());
 			anim->setEndValue(newNode->pos());
@@ -1389,14 +1337,13 @@ void QtGraphView::createTransition()
 
 			remain->addAnimation(anim);
 
-			if (newNode->isAccessNode() && newNode->getSubNodes().size() == 0 &&
-				oldNode->getSubNodes().size() > 0)
+			if (newNode->isAccessNode() && newNode->getSubNodes().size() == 0 && oldNode->getSubNodes().size() > 0)
 			{
-				dynamic_cast<QtGraphNodeAccess*>(oldNode)->hideLabel();
+				dynamic_cast<QtGraphNodeAccess *>(oldNode)->hideLabel();
 			}
 		}
 
-		QPropertyAnimation* anim = new QPropertyAnimation(view, QByteArrayLiteral("sceneRect"));
+		QPropertyAnimation *anim = new QPropertyAnimation(view, QByteArrayLiteral("sceneRect"));
 		anim->setStartValue(view->sceneRect());
 		anim->setEndValue(getSceneRect(m_nodes));
 
@@ -1415,11 +1362,11 @@ void QtGraphView::createTransition()
 	// fade in
 	if (appearingNodes.size() || m_edges.size())
 	{
-		QParallelAnimationGroup* appear = new QParallelAnimationGroup();
+		QParallelAnimationGroup *appear = new QParallelAnimationGroup();
 
-		for (QtGraphNode* node: appearingNodes)
+		for (QtGraphNode *node : appearingNodes)
 		{
-			QPropertyAnimation* anim = new QPropertyAnimation(node, "opacity");
+			QPropertyAnimation *anim = new QPropertyAnimation(node, "opacity");
 			anim->setDuration(300);
 			anim->setStartValue(0.0f);
 			anim->setEndValue(1.0f);
@@ -1430,9 +1377,9 @@ void QtGraphView::createTransition()
 			node->blendOut();
 		}
 
-		for (QtGraphEdge* edge: m_edges)
+		for (QtGraphEdge *edge : m_edges)
 		{
-			QPropertyAnimation* anim = new QPropertyAnimation(edge, "opacity");
+			QPropertyAnimation *anim = new QPropertyAnimation(edge, "opacity");
 			anim->setDuration(150);
 			anim->setStartValue(0.0f);
 			anim->setEndValue(1.0f);
@@ -1445,8 +1392,7 @@ void QtGraphView::createTransition()
 		m_transition->addAnimation(appear);
 	}
 
-	connect(
-		m_transition.get(), &QPropertyAnimation::finished, this, &QtGraphView::finishedTransition);
+	connect(m_transition.get(), &QPropertyAnimation::finished, this, &QtGraphView::finishedTransition);
 	m_transition->start();
 }
 
