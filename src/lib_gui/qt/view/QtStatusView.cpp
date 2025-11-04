@@ -85,12 +85,9 @@ void QtStatusView::refreshView()
 
 void QtStatusView::clear()
 {
-	m_onQtThread([this]() {
-		if (!m_model->index(0, 0).data(Qt::DisplayRole).toString().isEmpty())
-		{
-			m_model->removeRows(0, m_model->rowCount());
-		}
-
+	m_onQtThread([this]()
+	{
+		m_model->removeRows(0, m_model->rowCount());
 		m_table->showFirstRow();
 
 		m_status.clear();
