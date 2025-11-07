@@ -27,7 +27,7 @@ QtTooltip::QtTooltip(QWidget* parent)
 void QtTooltip::setTooltipInfo(const TooltipInfo& info)
 {
 	int maxWidth = 600;
-	QWidget* parent = (m_parentView != nullptr) ? m_parentView : parentWidget();
+	QWidget* parent = getParent();
 	if (parent != nullptr)
 	{
 		maxWidth = std::max(maxWidth, parent->width() - 50);
@@ -76,39 +76,38 @@ bool QtTooltip::isHovered() const
 
 void QtTooltip::show()
 {
-	QWidget* parent = (m_parentView != nullptr) ? m_parentView : parentWidget();
-	if (parent == nullptr)
+	QPoint pos = QCursor::pos() + m_offset;
+	QWidget* parent = getParent();
+
+	if (parent != nullptr)
 	{
-		return;
+		const QPoint parentPos = parent->mapToGlobal(QPoint(0, 0));
+
+		// Keep the tooltip inside the parent boundaries:
+
+		if (pos.x() + width() > parentPos.x() + parent->width())
+		{
+			pos.setX(pos.x() - width() - m_offset.x() * 2);
+		}
+
+		if (pos.x() < parentPos.x())
+		{
+			pos.setX(parentPos.x() + 10);
+		}
+
+		if (pos.y() + height() > parentPos.y() + parent->height())
+		{
+			pos.setY(pos.y() - height() - m_offset.y() * 2);
+		}
+
+		if (pos.y() < parentPos.y())
+		{
+			pos.setY(parentPos.y() + 10);
+		}
 	}
+	// Always show the tooltip, even if we couldn't check for the parent boundaries:
 
 	QWidget::show();
-
-	QPoint pos = QCursor::pos() + m_offset;
-	const QPoint parentPos = parent->mapToGlobal(QPoint(0, 0));
-
-	// Kepp the tooltip inside the parents boundaries:
-
-	if (pos.x() + width() > parentPos.x() + parent->width())
-	{
-		pos.setX(pos.x() - width() - m_offset.x() * 2);
-	}
-
-	if (pos.x() < parentPos.x())
-	{
-		pos.setX(parentPos.x() + 10);
-	}
-
-	if (pos.y() + height() > parentPos.y() + parent->height())
-	{
-		pos.setY(pos.y() - height() - m_offset.y() * 2);
-	}
-
-	if (pos.y() < parentPos.y())
-	{
-		pos.setY(parentPos.y() + 10);
-	}
-
 	move(pos);
 }
 
@@ -181,4 +180,9 @@ void QtTooltip::clearLayout(QLayout* layout)
 		}
 		delete item;
 	}
+}
+
+QWidget *QtTooltip::getParent() const
+{
+	return (m_parentView != nullptr) ? m_parentView : parentWidget();
 }

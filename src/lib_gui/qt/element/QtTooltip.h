@@ -29,8 +29,9 @@ protected:
 private:
 	void addTitle(const QString& title, int count, const QString& countText);
 	void addWidget(QWidget* widget);
-
 	void clearLayout(QLayout* layout);
+
+	QWidget *getParent() const;
 
 	QWidget* m_parentView = nullptr;
 	QPoint m_offset;
