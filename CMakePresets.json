@@ -71,6 +71,14 @@
 		},
 		{
 			"hidden": true,
+			"name": "system-clang-presets",
+			"cacheVariables": {
+				"CMAKE_C_COMPILER"  : "clang",
+				"CMAKE_CXX_COMPILER": "clang++"
+			}
+		},
+		{
+			"hidden": true,
 			"name": "sourcetrail-presets",
 			"cacheVariables": {
 				"BUILD_CXX_LANGUAGE_PACKAGE": "ON",
@@ -147,6 +155,22 @@
 			"inherits": [
 				"vcpkg-ninja-release",
 				"vcpkg-clang-presets"
+			]
+		},
+
+
+		{
+			"name": "system-clang-ninja-debug",
+			"inherits": [
+				"system-ninja-debug",
+				"system-clang-presets"
+			]
+		},
+		{
+			"name": "system-clang-ninja-release",
+			"inherits": [
+				"system-ninja-release",
+				"system-clang-presets"
 			]
 		}
 	]
