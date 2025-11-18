@@ -550,7 +550,7 @@ std::map<Id, std::pair<Id, NameHierarchy>> PersistentStorage::getNodeIdToParentF
 					tokenId,
 					std::make_pair(
 						getFileNodeId(location->getFilePath()),
-						NameHierarchy(location->getFilePath().str(), NAME_DELIMITER_FILE)));
+						NameHierarchy(location->getFilePath().str(), NameDelimiterType::FILE)));
 			}
 		}
 	});
@@ -570,7 +570,7 @@ std::map<Id, std::pair<Id, NameHierarchy>> PersistentStorage::getNodeIdToParentF
 					tokenId,
 					std::make_pair(
 						getFileNodeId(location->getFilePath()),
-						NameHierarchy(location->getFilePath().str(), NAME_DELIMITER_FILE)));
+						NameHierarchy(location->getFilePath().str(), NameDelimiterType::FILE)));
 			}
 		}
 	});
@@ -921,12 +921,12 @@ std::vector<SearchMatch> PersistentStorage::getAutocompletionFileMatches(
 		for (Id tokenId: match.tokenIds)
 		{
 			match.tokenNames.push_back(
-				NameHierarchy(getFileNodePath(tokenId).str(), NAME_DELIMITER_FILE));
+				NameHierarchy(getFileNodePath(tokenId).str(), NameDelimiterType::FILE));
 		}
 
 		if (!match.tokenNames.size())
 		{
-			match.tokenNames.push_back(NameHierarchy(match.name, NAME_DELIMITER_FILE));
+			match.tokenNames.push_back(NameHierarchy(match.name, NameDelimiterType::FILE));
 		}
 
 		match.indices = result.indices;
@@ -2861,7 +2861,7 @@ void PersistentStorage::addFileNodeToGraph(const StorageNode& storageNode, Graph
 	Node* node = graph->createNode(
 		storageNode.id,
 		NodeType(NODE_FILE),
-		NameHierarchy(filePath.fileName(), NAME_DELIMITER_FILE),
+		NameHierarchy(filePath.fileName(), NameDelimiterType::FILE),
 		indexed ? DefinitionKind::EXPLICIT : DefinitionKind::NONE);
 	node->addComponent(std::make_shared<TokenComponentFilePath>(filePath, complete));
 }
@@ -3302,7 +3302,7 @@ void PersistentStorage::buildSearchIndex()
 				// replace template arguments with .. to avoid clutter in search results and have
 				// different template specializations share the same node.
 				if (defKind == DefinitionKind::NONE &&
-					nameHierarchy.getDelimiter() == nameDelimiterTypeToString(NAME_DELIMITER_CXX))
+					nameHierarchy.getDelimiter() == nameDelimiterTypeToString(NameDelimiterType::CXX))
 				{
 					name = utility::replaceBetween(name, '<', '>', "..");
 				}

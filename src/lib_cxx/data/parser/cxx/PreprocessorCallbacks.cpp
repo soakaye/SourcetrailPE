@@ -68,7 +68,7 @@ void PreprocessorCallbacks::InclusionDirective(clang::SourceLocation  /*hashLoca
 	if (m_currentFileSymbolId && fileEntry)
 	{
 		const FilePath includedFilePath = m_canonicalFilePathCache->getCanonicalFilePath(*fileEntry);
-		const NameHierarchy includedFileNameHierarchy(includedFilePath.str(), NAME_DELIMITER_FILE);
+		const NameHierarchy includedFileNameHierarchy(includedFilePath.str(), NameDelimiterType::FILE);
 
 		Id includedFileSymbolId = m_client->recordSymbol(includedFileNameHierarchy);
 
@@ -92,7 +92,7 @@ void PreprocessorCallbacks::MacroDefined(
 			return;
 		}
 
-		const NameHierarchy nameHierarchy(macroNameToken.getIdentifierInfo()->getName().str(), NAME_DELIMITER_CXX);
+		const NameHierarchy nameHierarchy(macroNameToken.getIdentifierInfo()->getName().str(), NameDelimiterType::CXX);
 
 		Id symbolId = m_client->recordSymbol(nameHierarchy);
 		m_client->recordSymbolKind(symbolId, SymbolKind::MACRO);
@@ -148,7 +148,7 @@ void PreprocessorCallbacks::onMacroUsage(const clang::Token& macroNameToken)
 	{
 		const ParseLocation loc = getParseLocation(macroNameToken);
 
-		const NameHierarchy referencedNameHierarchy(macroNameToken.getIdentifierInfo()->getName().str(), NAME_DELIMITER_CXX);
+		const NameHierarchy referencedNameHierarchy(macroNameToken.getIdentifierInfo()->getName().str(), NameDelimiterType::CXX);
 
 		m_client->recordReference(ReferenceKind::MACRO_USAGE, m_client->recordSymbol(referencedNameHierarchy), loc.fileId, loc);
 	}

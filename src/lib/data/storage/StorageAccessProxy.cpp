@@ -156,7 +156,7 @@ void StorageAccessProxy::setSubject(std::weak_ptr<StorageAccess> subject)
 DEF_GETTER_1(getNodeIdForFileNode, const FilePath&, Id, 0)
 DEF_GETTER_1(getNodeIdForNameHierarchy, const NameHierarchy&, Id, 0)
 DEF_GETTER_1(getNodeIdsForNameHierarchies, const std::vector<NameHierarchy>, std::vector<Id>, {})
-DEF_GETTER_1(getNameHierarchyForNodeId, Id, NameHierarchy, NameHierarchy(NAME_DELIMITER_UNKNOWN))
+DEF_GETTER_1(getNameHierarchyForNodeId, Id, NameHierarchy, NameHierarchy(NameDelimiterType::UNKNOWN))
 DEF_GETTER_1(getNameHierarchiesForNodeIds, const std::vector<Id>&, std::vector<NameHierarchy>, {})
 
 typedef std::map<Id, std::pair<Id, NameHierarchy>> NodeIdToParentFileMap;

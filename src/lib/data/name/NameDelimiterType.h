@@ -3,12 +3,12 @@
 
 #include <string>
 
-enum NameDelimiterType
+enum class NameDelimiterType
 {
-	NAME_DELIMITER_UNKNOWN,
-	NAME_DELIMITER_FILE,
-	NAME_DELIMITER_CXX,
-	NAME_DELIMITER_JAVA
+	UNKNOWN,
+	FILE,
+	CXX,
+	JAVA
 };
 
 std::string nameDelimiterTypeToString(NameDelimiterType delimiter);

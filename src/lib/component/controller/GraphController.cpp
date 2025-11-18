@@ -2407,7 +2407,7 @@ void GraphController::createLegendGraph()
 					   DefinitionKind defKind = DefinitionKind::EXPLICIT) {
 		nodePositions.emplace(++id, position);
 		return graph->createNode(
-			id, NodeType(kind), NameHierarchy(name, NAME_DELIMITER_UNKNOWN), defKind);
+			id, NodeType(kind), NameHierarchy(name, NameDelimiterType::UNKNOWN), defKind);
 	};
 
 	auto addEdge = [&id, &graph](Edge::EdgeType type, Node* from, Node* to) {

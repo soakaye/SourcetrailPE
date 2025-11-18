@@ -36,9 +36,9 @@ ParseLocation validLocation(Id locationId = 0)
 
 NameHierarchy createNameHierarchy(std::string s)
 {
-	NameHierarchy nameHierarchy(NAME_DELIMITER_CXX);
+	NameHierarchy nameHierarchy(NameDelimiterType::CXX);
 	for (const std::string &element :
-		 utility::splitToVector(s, nameDelimiterTypeToString(NAME_DELIMITER_CXX))) {
+		 utility::splitToVector(s, nameDelimiterTypeToString(NameDelimiterType::CXX))) {
 		nameHierarchy.push(element);
 	}
 	return nameHierarchy;
@@ -64,7 +64,7 @@ TEST_CASE("storage saves file")
 	std::string filePath = "path/to/test.h";
 
 	std::shared_ptr<IntermediateStorage> intermediateStorage = std::make_shared<IntermediateStorage>();
-	Id id = intermediateStorage->addNode(StorageNodeData(NODE_FILE, NameHierarchy::serialize(NameHierarchy(filePath, NAME_DELIMITER_FILE)))).first;
+	Id id = intermediateStorage->addNode(StorageNodeData(NODE_FILE, NameHierarchy::serialize(NameHierarchy(filePath, NameDelimiterType::FILE)))).first;
 	intermediateStorage->addFile(StorageFile(id, filePath, "someLanguage", "someTime", true, true));
 
 	storage.inject(intermediateStorage.get());

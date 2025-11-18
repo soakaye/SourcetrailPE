@@ -16,16 +16,6 @@ public class NameHierarchy
 		m_elements.add(new NameElement(name));
 	}
 
-	public NameHierarchy(NameElement name)
-	{
-		m_elements.add(name);
-	}
-
-	public NameHierarchy(List<NameElement> names)
-	{
-		m_elements.addAll(names);
-	}
-
 	public void setSeparator(char separator)
 	{
 		m_separator = separator;

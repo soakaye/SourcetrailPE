@@ -35,7 +35,7 @@ CxxTypeName::CxxTypeName(
 NameHierarchy CxxTypeName::toNameHierarchy() const
 {
 	NameHierarchy ret = getParent() ? getParent()->toNameHierarchy()
-									: NameHierarchy(NAME_DELIMITER_CXX);
+									: NameHierarchy(NameDelimiterType::CXX);
 	ret.push(m_name + getTemplateSuffix(m_templateArguments));
 	return ret;
 }

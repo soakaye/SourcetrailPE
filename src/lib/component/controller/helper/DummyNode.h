@@ -97,7 +97,7 @@ public:
 		, tokenId(0)
 		, bundleId(0)
 		, bundledNodeType(NODE_SYMBOL)
-		, qualifierName(NAME_DELIMITER_UNKNOWN)
+		, qualifierName(NameDelimiterType::UNKNOWN)
 	{
 	}
 

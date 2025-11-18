@@ -108,7 +108,7 @@ SearchMatch::SearchMatch(const std::string& query)
 	, searchType(SEARCH_NONE)
 
 {
-	tokenNames.emplace_back(query, NAME_DELIMITER_UNKNOWN);
+	tokenNames.emplace_back(query, NameDelimiterType::UNKNOWN);
 }
 
 

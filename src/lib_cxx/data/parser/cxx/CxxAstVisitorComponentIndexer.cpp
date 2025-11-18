@@ -642,7 +642,7 @@ void CxxAstVisitorComponentIndexer::visitUsingDirectiveDecl(clang::UsingDirectiv
 						->getCanonicalFilePathCache()
 						->getCanonicalFilePath(location.fileId)
 						.str(),
-					NAME_DELIMITER_FILE)),
+					NameDelimiterType::FILE)),
 			location);
 	}
 }
@@ -663,7 +663,7 @@ void CxxAstVisitorComponentIndexer::visitUsingDecl(clang::UsingDecl* d)
 						->getCanonicalFilePathCache()
 						->getCanonicalFilePath(location.fileId)
 						.str(),
-					NAME_DELIMITER_FILE)),
+					NameDelimiterType::FILE)),
 			location);
 	}
 }
@@ -1244,7 +1244,7 @@ Id CxxAstVisitorComponentIndexer::getOrCreateSymbolId(const clang::NamedDecl* de
 		return it->second;
 	}
 
-	NameHierarchy symbolName("global", NAME_DELIMITER_UNKNOWN);
+	NameHierarchy symbolName("global", NameDelimiterType::UNKNOWN);
 	if (decl)
 	{
 		std::unique_ptr<CxxDeclName> declName =
@@ -1281,7 +1281,7 @@ Id CxxAstVisitorComponentIndexer::getOrCreateSymbolId(const clang::Type* type)
 		return it->second;
 	}
 
-	NameHierarchy symbolName("global", NAME_DELIMITER_UNKNOWN);
+	NameHierarchy symbolName("global", NameDelimiterType::UNKNOWN);
 	if (type)
 	{
 		std::unique_ptr<CxxTypeName> typeName =

@@ -248,7 +248,7 @@ Id ParserClientImpl::addFileName(const FilePath& filePath)
 		return it->second;
 	}
 
-	const Id fileId = addNodeHierarchy(NameHierarchy(file, NAME_DELIMITER_FILE));
+	const Id fileId = addNodeHierarchy(NameHierarchy(file, NameDelimiterType::FILE));
 	m_storage->setNodeType(fileId, NODE_FILE);
 
 	m_fileIdMap.emplace(file, fileId);

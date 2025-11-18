@@ -1,9 +1,7 @@
 #ifndef NAME_ELEMENT_H
 #define NAME_ELEMENT_H
 
-#include <memory>
 #include <string>
-#include <vector>
 
 class DataType;
 
@@ -13,7 +11,7 @@ public:
 	class Signature
 	{
 	public:
-		Signature();
+		Signature() = default;
 		Signature(std::string prefix, std::string postfix);
 
 		std::string qualifyName(const std::string& name) const;
@@ -30,7 +28,7 @@ public:
 
 	NameElement(std::string name);
 	NameElement(std::string name, std::string prefix, std::string postfix);
-	~NameElement();
+	~NameElement() = default;
 
 	const std::string& getName() const;
 	std::string getNameWithSignature() const;

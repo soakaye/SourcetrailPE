@@ -1,46 +1,50 @@
 #include "NameDelimiterType.h"
 
-#include <vector>
+#include <array>
+
+static const std::array allDelimiters
+{
+	NameDelimiterType::FILE,
+	NameDelimiterType::CXX,
+	NameDelimiterType::JAVA
+};
 
 std::string nameDelimiterTypeToString(NameDelimiterType delimiter)
 {
 	switch (delimiter)
 	{
-	case NAME_DELIMITER_FILE:
-		return "/";
-	case NAME_DELIMITER_CXX:
-		return "::";
-	case NAME_DELIMITER_JAVA:
-		return ".";
-	default:
-		break;
+		case NameDelimiterType::FILE:
+			return "/";
+		case NameDelimiterType::CXX:
+			return "::";
+		case NameDelimiterType::JAVA:
+			return ".";
+		default:
+			break;
 	}
 	return "@";
 }
 
-NameDelimiterType stringToNameDelimiterType(const std::string& s)
+NameDelimiterType stringToNameDelimiterType(const std::string &s)
 {
-	if (s == nameDelimiterTypeToString(NAME_DELIMITER_FILE))
+	if (s == nameDelimiterTypeToString(NameDelimiterType::FILE))
 	{
-		return NAME_DELIMITER_FILE;
+		return NameDelimiterType::FILE;
 	}
-	if (s == nameDelimiterTypeToString(NAME_DELIMITER_CXX))
+	if (s == nameDelimiterTypeToString(NameDelimiterType::CXX))
 	{
-		return NAME_DELIMITER_CXX;
+		return NameDelimiterType::CXX;
 	}
-	if (s == nameDelimiterTypeToString(NAME_DELIMITER_JAVA))
+	if (s == nameDelimiterTypeToString(NameDelimiterType::JAVA))
 	{
-		return NAME_DELIMITER_JAVA;
+		return NameDelimiterType::JAVA;
 	}
-	return NAME_DELIMITER_UNKNOWN;
+	return NameDelimiterType::UNKNOWN;
 }
 
-NameDelimiterType detectDelimiterType(const std::string& name)
+NameDelimiterType detectDelimiterType(const std::string &name)
 {
-	std::vector<NameDelimiterType> allDelimiters {
-		NAME_DELIMITER_FILE, NAME_DELIMITER_CXX, NAME_DELIMITER_JAVA};
-
-	for (NameDelimiterType delimiter: allDelimiters)
+	for (NameDelimiterType delimiter : allDelimiters)
 	{
 		if (name.find(nameDelimiterTypeToString(delimiter)) != std::string::npos)
 		{
@@ -48,5 +52,5 @@ NameDelimiterType detectDelimiterType(const std::string& name)
 		}
 	}
 
-	return NAME_DELIMITER_UNKNOWN;
+	return NameDelimiterType::UNKNOWN;
 }

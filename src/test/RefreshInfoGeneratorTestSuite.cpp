@@ -137,7 +137,7 @@ Id addFileToStorage(
 		storage
 			->addNode(StorageNodeData(
 				NODE_FILE,
-				NameHierarchy::serialize(NameHierarchy(filePath.str(), NAME_DELIMITER_FILE))))
+				NameHierarchy::serialize(NameHierarchy(filePath.str(), NameDelimiterType::FILE))))
 			.first;
 	storage->addFile(
 		StorageFile(id, filePath.str(), "someLanguage", modificationTime, indexed, complete));
