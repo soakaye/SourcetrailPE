@@ -76,7 +76,6 @@ bool Project::isLoaded() const
 	case PROJECT_STATE_EMPTY:
 	case PROJECT_STATE_LOADED:
 	case PROJECT_STATE_OUTDATED:
-	case PROJECT_STATE_NEEDS_MIGRATION:
 		return true;
 
 	default:
@@ -166,16 +165,7 @@ void Project::load(std::shared_ptr<DialogView> dialogView)
 
 	bool canLoad = false;
 
-	if (m_settings->needMigration())
-	{
-		m_state = PROJECT_STATE_NEEDS_MIGRATION;
-
-		if (!m_storage->isEmpty() && !m_storage->isIncompatible())
-		{
-			canLoad = true;
-		}
-	}
-	else if (m_storage->isEmpty())
+	if (m_storage->isEmpty())
 	{
 		m_state = PROJECT_STATE_EMPTY;
 	}
@@ -230,15 +220,6 @@ void Project::load(std::shared_ptr<DialogView> dialogView)
 	{
 		switch (m_state)
 		{
-		case PROJECT_STATE_NEEDS_MIGRATION:
-			MessageStatus(
-				"Project could not be loaded and needs to be re-indexed after automatic migration "
-				"to latest "
-				"version.",
-				false,
-				false)
-				.dispatch();
-			break;
 		case PROJECT_STATE_EMPTY:
 			MessageStatus(
 				"Project could not load any symbols because the index database is empty. Please "
@@ -312,16 +293,6 @@ void Project::refresh(
 		needsFullRefresh = true;
 		break;
 
-	case PROJECT_STATE_NEEDS_MIGRATION:
-		question =
-			"This project was created with a different version and uses an old project file "
-			"format. "
-			"The project can still be opened and used with this version, but needs to be fully "
-			"reindexed. "
-			"Do you want Sourcetrail to update the project file and reindex the project?";
-		needsFullRefresh = true;
-		break;
-
 	case PROJECT_STATE_DB_CORRUPTED:
 		question =
 			"There was a problem loading the index of this project. The project needs to get "
@@ -357,11 +328,6 @@ void Project::refresh(
 	}
 
 	m_refreshStage = RefreshStageType::REFRESHING;
-
-	if (m_state == PROJECT_STATE_NEEDS_MIGRATION)
-	{
-		m_settings->migrate();
-	}
 
 	m_settings->reload();
 

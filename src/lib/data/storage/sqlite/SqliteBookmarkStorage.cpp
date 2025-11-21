@@ -17,53 +17,6 @@ size_t SqliteBookmarkStorage::getStaticVersion() const
 	return s_storageVersion;
 }
 
-void SqliteBookmarkStorage::migrateIfNecessary()
-{
-// 	SqliteStorageMigrator migrator;
-
-// 	migrator.addMigration(
-// 		2,
-// 		std::make_shared<SqliteStorageMigrationLambda>(
-// 			[](const SqliteStorageMigration*  /*migration*/, SqliteStorage* storage) {
-// 				std::string separator = "::";
-// 				if (Application::getInstance())
-// 				{
-// 					std::shared_ptr<const Project> currentProject =
-// 						Application::getInstance()->getCurrentProject();
-// 					{
-// 						LanguageType currentLanguage = ProjectSettings::getLanguageOfProject(
-// 							currentProject->getProjectSettingsFilePath());
-// #if BUILD_JAVA_LANGUAGE_PACKAGE
-// 						if (currentLanguage == LanguageType::JAVA)
-// 						{
-// 							separator = ".";
-// 						}
-// #endif	  // BUILD_JAVA_LANGUAGE_PACKAGE
-// #if BUILD_PYTHON_LANGUAGE_PACKAGE
-// 						if (currentLanguage == LanguageType::PYTHON)
-// 						{
-// 							separator = ".";
-// 						}
-// #endif	  // BUILD_JAVA_LANGUAGE_PACKAGE
-// 					}
-// 				}
-// 				SqliteStorageMigration::executeStatementInStorage(
-// 					storage,
-// 					"UPDATE bookmarked_node SET serialized_node_name = '" + separator +
-// 						"\tm' || serialized_node_name");
-// 				SqliteStorageMigration::executeStatementInStorage(
-// 					storage,
-// 					"UPDATE bookmarked_edge SET serialized_source_node_name = '" + separator +
-// 						"\tm' || serialized_source_node_name");
-// 				SqliteStorageMigration::executeStatementInStorage(
-// 					storage,
-// 					"UPDATE bookmarked_edge SET serialized_target_node_name = '" + separator +
-// 						"\tm' || serialized_target_node_name");
-// 			}));
-
-// 	migrator.migrate(this, SqliteBookmarkStorage::s_storageVersion);
-}
-
 StorageBookmarkCategory SqliteBookmarkStorage::addBookmarkCategory(const StorageBookmarkCategoryData& data)
 {
 	std::string statement =

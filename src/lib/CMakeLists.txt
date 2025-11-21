@@ -247,12 +247,6 @@ add_library(Sourcetrail_lib
 	data/search/SearchMatch.cpp
 	data/search/SearchMatch.h
 
-	data/storage/migration/SqliteStorageMigration.cpp
-	data/storage/migration/SqliteStorageMigration.h
-	data/storage/migration/SqliteStorageMigrationLambda.cpp
-	data/storage/migration/SqliteStorageMigrationLambda.h
-	data/storage/migration/SqliteStorageMigrator.h
-
 	data/storage/sqlite/SqliteBookmarkStorage.cpp
 	data/storage/sqlite/SqliteBookmarkStorage.h
 	data/storage/sqlite/SqliteDatabaseIndex.cpp
@@ -335,16 +329,6 @@ add_library(Sourcetrail_lib
 	project/SourceGroupFactoryModule.h
 	project/SourceGroupFactoryModuleCustom.cpp
 	project/SourceGroupFactoryModuleCustom.h
-
-	settings/migration/SettingsMigration.cpp
-	settings/migration/SettingsMigration.h
-	settings/migration/SettingsMigrationDeleteKey.cpp
-	settings/migration/SettingsMigrationDeleteKey.h
-	settings/migration/SettingsMigrationLambda.cpp
-	settings/migration/SettingsMigrationLambda.h
-	settings/migration/SettingsMigrationMoveKey.cpp
-	settings/migration/SettingsMigrationMoveKey.h
-	settings/migration/SettingsMigrator.h
 
 	settings/source_group/component/SourceGroupSettingsWithCustomCommand.cpp
 	settings/source_group/component/SourceGroupSettingsWithCustomCommand.h
@@ -555,9 +539,6 @@ add_library(Sourcetrail_lib
 	utility/messaging/MessageQueue.cpp
 	utility/messaging/MessageQueue.h
 
-	utility/migration/Migration.h
-	utility/migration/Migrator.h
-
 	utility/scheduling/Blackboard.cpp
 	utility/scheduling/Blackboard.h
 	utility/scheduling/Task.cpp
@@ -648,14 +629,12 @@ target_include_directories(Sourcetrail_lib
 		data/name
 		data/parser
 		data/search
-		data/storage/migration
 		data/storage/sqlite
 		data/storage/type
 		data/storage
 		data/tooltip
 		data
 		project
-		settings/migration
 		settings/source_group/component
 		settings/source_group/type
 		settings/source_group
@@ -681,7 +660,6 @@ target_include_directories(Sourcetrail_lib
 		utility/messaging/type/tab
 		utility/messaging/type
 		utility/messaging
-		utility/migration
 		utility/scheduling
 		utility/text
 		utility

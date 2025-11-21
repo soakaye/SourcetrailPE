@@ -33,7 +33,6 @@ add_executable(Sourcetrail_test
 	QtResourcesTestSuite.cpp
 	RefreshInfoGeneratorTestSuite.cpp
 	SearchIndexTestSuite.cpp
-	SettingsMigratorTestSuite.cpp
 	SettingsTestSuite.cpp
 	SharedMemoryTestSuite.cpp
 	SourceGroupTestSuite.cpp
