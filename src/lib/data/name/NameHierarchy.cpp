@@ -3,11 +3,15 @@
 #include "logging.h"
 #include "utilityString.h"
 
+#include <cassert>
 #include <sstream>
 
-static const std::string_view META_DELIMITER = "\tm";
-static const std::string_view NAME_DELIMITER = "\tn";
-static const std::string_view PART_DELIMITER = "\ts";
+using namespace std;
+using namespace utility;
+
+static const std::string_view META_DELIMITER      = "\tm";
+static const std::string_view NAME_DELIMITER      = "\tn";
+static const std::string_view PART_DELIMITER      = "\ts";
 static const std::string_view SIGNATURE_DELIMITER = "\tp";
 
 std::string NameHierarchy::serialize(const NameHierarchy &nameHierarchy)
@@ -40,7 +44,7 @@ NameHierarchy NameHierarchy::deserialize(const std::string &serializedName)
 	size_t mpos = serializedName.find(META_DELIMITER);
 	if (mpos == std::string::npos)
 	{
-		LOG_ERROR("unable to deserialize name hierarchy: " + serializedName); // todo: obfuscate serializedName!
+		LOG_ERROR("unable to deserialize name hierarchy: " + serializedName);
 		return NameHierarchy(NameDelimiterType::UNKNOWN);
 	}
 
@@ -53,7 +57,7 @@ NameHierarchy NameHierarchy::deserialize(const std::string &serializedName)
 		size_t spos = serializedName.find(PART_DELIMITER, npos);
 		if (spos == std::string::npos)
 		{
-			LOG_ERROR("unable to deserialize name hierarchy: " + serializedName); // todo: obfuscate serializedName!
+			LOG_ERROR("unable to deserialize name hierarchy: " + serializedName);
 			return NameHierarchy(NameDelimiterType::UNKNOWN);
 		}
 
@@ -64,7 +68,7 @@ NameHierarchy NameHierarchy::deserialize(const std::string &serializedName)
 		size_t ppos = serializedName.find(SIGNATURE_DELIMITER, spos);
 		if (ppos == std::string::npos)
 		{
-			LOG_ERROR("unable to deserialize name hierarchy: " + serializedName); // todo: obfuscate serializedName!
+			LOG_ERROR("unable to deserialize name hierarchy: " + serializedName);
 			return NameHierarchy(NameDelimiterType::UNKNOWN);
 		}
 
@@ -86,22 +90,12 @@ NameHierarchy NameHierarchy::deserialize(const std::string &serializedName)
 		nameHierarchy.push(NameElement(std::move(name), std::move(prefix), std::move(postfix)));
 	}
 
-	// TODO: replace duplicate main definition fix with better solution
-	if (nameHierarchy.size() == 1 && nameHierarchy.back().hasSignature() && !nameHierarchy.back().getName().empty() &&
-		nameHierarchy.back().getName()[0] == '.' && utility::isPrefix(".:main:.", nameHierarchy.back().getName()))
-	{
-		NameElement::Signature sig = nameHierarchy.back().getSignature();
-		nameHierarchy.pop();
-		nameHierarchy.push(NameElement("main", sig.getPrefix(), sig.getPostfix()));
-	}
+	if (isUniquifiedMainFunction(nameHierarchy))
+		deuniquifyMainFunction(&nameHierarchy);
 
 	return nameHierarchy;
 }
 
-const std::string &NameHierarchy::getDelimiter() const
-{
-	return m_delimiter;
-}
 
 NameHierarchy::NameHierarchy(std::string delimiter)
 	: m_delimiter(std::move(delimiter))
@@ -122,6 +116,16 @@ NameHierarchy::NameHierarchy(const NameDelimiterType delimiterType)
 NameHierarchy::NameHierarchy(std::string name, const NameDelimiterType delimiterType)
 	: NameHierarchy(name, nameDelimiterTypeToString(delimiterType))
 {
+}
+
+void NameHierarchy::setDelimiter(std::string delimiter)
+{
+	m_delimiter = std::move(delimiter);
+}
+
+const std::string &NameHierarchy::getDelimiter() const
+{
+	return m_delimiter;
 }
 
 void NameHierarchy::push(NameElement element)
@@ -188,7 +192,7 @@ std::string NameHierarchy::getQualifiedName() const
 std::string NameHierarchy::getQualifiedNameWithSignature() const
 {
 	std::string name = getQualifiedName();
-	if (m_elements.size())
+	if (m_elements.size() != 0)
 	{
 		name = m_elements.back().getSignature().qualifyName(name); // todo: use separator for signature!
 	}
@@ -197,7 +201,7 @@ std::string NameHierarchy::getQualifiedNameWithSignature() const
 
 std::string NameHierarchy::getRawName() const
 {
-	if (m_elements.size())
+	if (m_elements.size() != 0)
 	{
 		return m_elements.back().getName();
 	}
@@ -206,7 +210,7 @@ std::string NameHierarchy::getRawName() const
 
 std::string NameHierarchy::getRawNameWithSignature() const
 {
-	if (m_elements.size())
+	if (m_elements.size() != 0)
 	{
 		return m_elements.back().getNameWithSignature();
 	}
@@ -215,7 +219,7 @@ std::string NameHierarchy::getRawNameWithSignature() const
 
 std::string NameHierarchy::getRawNameWithSignatureParameters() const
 {
-	if (m_elements.size())
+	if (m_elements.size() != 0)
 	{
 		return m_elements.back().getNameWithSignatureParameters();
 	}
@@ -224,7 +228,7 @@ std::string NameHierarchy::getRawNameWithSignatureParameters() const
 
 bool NameHierarchy::hasSignature() const
 {
-	if (m_elements.size())
+	if (m_elements.size() != 0)
 	{
 		return m_elements.back().hasSignature();
 	}
@@ -234,10 +238,51 @@ bool NameHierarchy::hasSignature() const
 
 NameElement::Signature NameHierarchy::getSignature() const
 {
-	if (m_elements.size())
+	if (m_elements.size() != 0)
 	{
 		return m_elements.back().getSignature(); // todo: use separator for signature!
 	}
 
 	return NameElement::Signature();
 }
+
+
+// Note: This only fixes duplicated main functions, other duplicated functions still experience the described problem!
+// Related issues:
+// - "Nodes for different symbols with the same name are merged" (https://github.com/CoatiSoftware/Sourcetrail/issues/233)
+// - "Not obvious which main() is chosen in Custom Trail dialog" (https://github.com/CoatiSoftware/Sourcetrail/issues/728)
+// TODO: replace duplicate main definition fix with better solution.
+
+static constexpr string MAIN_NAME = "main";
+static constexpr string DECODED_MAIN_NAME = ".:main:."; // Could this cause problems with module partitions? (https://en.cppreference.com/w/cpp/language/modules.html#Module_partitions)
+
+bool isMainFunction(const NameHierarchy &nameHierarchy)
+{
+	return nameHierarchy.size() == 1 && nameHierarchy.back().hasSignature() && nameHierarchy.back().getName() == MAIN_NAME;
+}
+
+void uniquifyMainFunction(NameHierarchy *main, const string &uniqueAppendix)
+{
+	assert(isMainFunction(*main));
+
+	const NameElement::Signature signature = main->back().getSignature();
+
+	main->pop();
+	main->push(NameElement(DECODED_MAIN_NAME + uniqueAppendix, signature.getPrefix(), signature.getPostfix()));
+}
+
+bool isUniquifiedMainFunction(const NameHierarchy &nameHierarchy)
+{
+	return nameHierarchy.size() == 1 && nameHierarchy.back().hasSignature() && !nameHierarchy.back().getName().empty()
+		&& nameHierarchy.back().getName()[0] == DECODED_MAIN_NAME[0] && isPrefix(DECODED_MAIN_NAME, nameHierarchy.back().getName());
+}
+
+void deuniquifyMainFunction(NameHierarchy *main)
+{
+	assert(isUniquifiedMainFunction(*main));
+
+	NameElement::Signature signature = main->back().getSignature();
+	main->pop();
+	main->push(NameElement(MAIN_NAME, signature.getPrefix(), signature.getPostfix()));
+}
+

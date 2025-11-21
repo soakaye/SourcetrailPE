@@ -240,21 +240,14 @@ std::string substrBetween(const std::string &str, const std::string &delimiter1,
 
 
 
-bool isPrefix(const std::string &prefix, const std::string &text)
+bool isPrefix(const string_view prefix, const string_view text)
 {
-	if (prefix.size() <= text.size())
-	{
-		std::pair<typename std::string::const_iterator, typename std::string::const_iterator> res =
-			std::mismatch(prefix.begin(), prefix.end(), text.begin());
-
-		return res.first == prefix.end();
-	}
-	return false;
+	return text.starts_with(prefix);
 }
 
-bool isPostfix(const std::string &postfix, const std::string &text)
+bool isPostfix(const string_view postfix, const string_view text)
 {
-	return text.size() >= postfix.size() && text.rfind(postfix) == (text.size() - postfix.size());
+	return text.ends_with(postfix);
 }
 
 
