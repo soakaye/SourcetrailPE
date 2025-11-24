@@ -28,7 +28,6 @@ add_executable(Sourcetrail_test
 	MessageQueueTestSuite.cpp
 	NetworkProtocolHelperTestSuite.cpp
 	PlatformTestSuite.cpp
-	PythonIndexerTestSuite.cpp
 	QtActionsTestSuite.cpp
 	QtResourcesTestSuite.cpp
 	RefreshInfoGeneratorTestSuite.cpp

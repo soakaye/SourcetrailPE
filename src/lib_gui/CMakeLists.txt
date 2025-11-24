@@ -443,19 +443,6 @@ if (BUILD_JAVA_LANGUAGE_PACKAGE)
 	)
 endif()
 
-if (BUILD_PYTHON_LANGUAGE_PACKAGE)
-	target_sources(Sourcetrail_lib_gui
-		PRIVATE
-			qt/project_wizard/content/path/QtProjectWizardContentPathPythonEnvironment.cpp
-			qt/project_wizard/content/path/QtProjectWizardContentPathPythonEnvironment.h
-	)
-
-	target_include_directories(Sourcetrail_lib_gui
-		PUBLIC
-			qt/project_wizard/content/path
-	)
-endif()
-
 setDefaultTargetOptions(Sourcetrail_lib_gui)
 
 set_target_properties(Sourcetrail_lib_gui

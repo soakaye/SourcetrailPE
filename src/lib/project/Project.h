@@ -37,8 +37,7 @@ public:
 
 	void load(std::shared_ptr<DialogView> dialogView);
 
-	void refresh(
-		std::shared_ptr<DialogView> dialogView, RefreshMode refreshMode, bool shallowIndexingRequested);
+	void refresh(std::shared_ptr<DialogView> dialogView, RefreshMode refreshMode);
 
 	RefreshInfo getRefreshInfo(RefreshMode mode) const;
 

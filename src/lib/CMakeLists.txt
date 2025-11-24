@@ -724,22 +724,6 @@ if (BUILD_JAVA_LANGUAGE_PACKAGE)
 	)
 endif()
 
-if (BUILD_PYTHON_LANGUAGE_PACKAGE)
-	target_sources(Sourcetrail_lib
-		PRIVATE
-			settings/source_group/component/python/SourceGroupSettingsWithPythonEnvironmentPath.cpp
-			settings/source_group/component/python/SourceGroupSettingsWithPythonEnvironmentPath.h
-			settings/source_group/component/python/SourceGroupSettingsWithSourceExtensionsPython.h
-
-			settings/source_group/type/SourceGroupSettingsPythonEmpty.h
-	)
-	target_include_directories(Sourcetrail_lib
-		PUBLIC
-			settings/source_group/component/python
-			settings/source_group/type
-	)
-endif()
-
 target_include_directories(Sourcetrail_lib
 	PUBLIC
 		.
@@ -754,7 +738,6 @@ target_link_libraries(Sourcetrail_lib
 
 		$<$<BOOL:${BUILD_CXX_LANGUAGE_PACKAGE}>:Sourcetrail_lib_cxx>
 		$<$<BOOL:${BUILD_JAVA_LANGUAGE_PACKAGE}>:Sourcetrail_lib_java>
-		$<$<BOOL:${BUILD_PYTHON_LANGUAGE_PACKAGE}>:Sourcetrail_lib_python>
 
 		External_lib_tinyxml
 		External_lib_cppsqlite3

@@ -20,10 +20,6 @@
 #	include "SourceGroupSettingsJavaMaven.h"
 #endif	  // BUILD_JAVA_LANGUAGE_PACKAGE
 
-#if BUILD_PYTHON_LANGUAGE_PACKAGE
-#	include "SourceGroupSettingsPythonEmpty.h"
-#endif	  // BUILD_PYTHON_LANGUAGE_PACKAGE
-
 const std::string ProjectSettings::PROJECT_FILE_EXTENSION = ".srctrlprj";
 const std::string ProjectSettings::BOOKMARK_DB_FILE_EXTENSION = ".srctrlbm";
 const std::string ProjectSettings::INDEX_DB_FILE_EXTENSION = ".srctrldb";
@@ -187,11 +183,6 @@ std::vector<std::shared_ptr<SourceGroupSettings>> ProjectSettings::getAllSourceG
 			settings = std::make_shared<SourceGroupSettingsJavaGradle>(id, this);
 			break;
 #endif	  // BUILD_JAVA_LANGUAGE_PACKAGE
-#if BUILD_PYTHON_LANGUAGE_PACKAGE
-		case SourceGroupType::PYTHON_EMPTY:
-			settings = std::make_shared<SourceGroupSettingsPythonEmpty>(id, this);
-			break;
-#endif	  // BUILD_PYTHON_LANGUAGE_PACKAGE
 		case SourceGroupType::CUSTOM_COMMAND:
 			settings = std::make_shared<SourceGroupSettingsCustomCommand>(id, this);
 			break;
