@@ -253,8 +253,8 @@ NameElement::Signature NameHierarchy::getSignature() const
 // - "Not obvious which main() is chosen in Custom Trail dialog" (https://github.com/CoatiSoftware/Sourcetrail/issues/728)
 // TODO: replace duplicate main definition fix with better solution.
 
-static constexpr string MAIN_NAME = "main";
-static constexpr string DECODED_MAIN_NAME = ".:main:."; // Could this cause problems with module partitions? (https://en.cppreference.com/w/cpp/language/modules.html#Module_partitions)
+static const string MAIN_NAME = "main";
+static const string DECODED_MAIN_NAME = ".:main:."; // Could this cause problems with module partitions? (https://en.cppreference.com/w/cpp/language/modules.html#Module_partitions)
 
 bool isMainFunction(const NameHierarchy &nameHierarchy)
 {

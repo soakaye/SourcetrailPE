@@ -208,6 +208,7 @@ vector<string> VisualStudioVersionSupport::getVersionRanges()
 	// Version table: https://github.com/microsoft/vswhere/wiki/Versions#release-versions
 	// Sorted from newest to oldest:
 	const vector<string> releasedVisualStudioVersionRanges = {
+		"[18.0, 19.0)"s, // 2026
 		"[17.0, 18.0)"s, // 2022
 		"[16.0, 17.0)"s, // 2019
 		"[15.0, 16.0)"s  // 2017
