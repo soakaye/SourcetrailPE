@@ -56,11 +56,4 @@ private:
 	std::string m_delimiter;
 };
 
-// Functions for handling duplicated main functions:
-bool isMainFunction(const NameHierarchy &nameHierarchy);
-void uniquifyMainFunction(NameHierarchy *main, const std::string &uniqueAppendix);
-bool isUniquifiedMainFunction(const NameHierarchy &nameHierarchy);
-void deuniquifyMainFunction(NameHierarchy *main);
-
-
-#endif // NAME_ELEMENT_H
+#endif

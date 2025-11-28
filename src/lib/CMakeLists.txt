@@ -577,6 +577,8 @@ add_library(Sourcetrail_lib
 
 	utility/ConfigManager.cpp
 	utility/ConfigManager.h
+	utility/Id.cpp
+	utility/Id.h
 	utility/LowMemoryStringMap.h
 	utility/OrderedCache.h
 	utility/Platform.cpp
@@ -588,24 +590,24 @@ add_library(Sourcetrail_lib
 	utility/SingleValueCache.h
 	utility/TimeStamp.cpp
 	utility/TimeStamp.h
+	utility/Tree.h
+	utility/UnorderedCache.h
+	utility/Version.cpp
+	utility/Version.h
 	utility/tracing.cpp
 	utility/tracing.h
-	utility/Tree.h
 	utility/types.h
-	utility/Id.h
-	utility/Id.cpp
-	utility/UnorderedCache.h
 	utility/utility.cpp
 	utility/utility.h
 	utility/utilityEnum.h
+	utility/utilityMainFunction.cpp
+	utility/utilityMainFunction.h
 	utility/utilityString.cpp
 	utility/utilityString.h
 	utility/utilityUuid.cpp
 	utility/utilityUuid.h
 	utility/utilityXml.cpp
 	utility/utilityXml.h
-	utility/Version.cpp
-	utility/Version.h
 )
 setDefaultTargetOptions(Sourcetrail_lib)
 

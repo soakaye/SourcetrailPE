@@ -6,18 +6,16 @@
 #include "CxxAstVisitorComponentDeclRefKind.h"
 #include "CxxAstVisitorComponentTypeRefKind.h"
 #include "CxxDeclNameResolver.h"
-#include "CxxFunctionDeclName.h"
 #include "CxxTypeNameResolver.h"
 #include "ParserClient.h"
 #include "utilityClang.h"
+#include "utilityMainFunction.h"
 
 #include <clang/AST/ASTContext.h>
 #include <clang/Analysis/CFG.h>
 #include <clang/Basic/SourceLocation.h>
 #include <clang/Basic/SourceManager.h>
 #include <clang/Lex/Preprocessor.h>
-
-#include <iostream>
 
 using namespace std;
 using namespace clang;
