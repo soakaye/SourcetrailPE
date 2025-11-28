@@ -97,15 +97,12 @@ std::string join(const ContainerType& list, const std::string& delimiter)
 //
 
 std::u32string convertToUtf32(const std::string &utf8chars);
-std::string convertToUtf8(const std::u32string &utf32chars);
 
 std::string toLowerCase(const std::string& in);
 
-std::u32string toLowerCase(const std::u32string &in);
+bool isCaseInsensitiveEqual(const std::string& a, const std::string& b);
 
-bool equalsCaseInsensitive(const std::string& a, const std::string& b);
-
-bool caseInsensitiveLess(const std::string& s1, const std::string& s2);
+bool isCaseInsensitiveLess(const std::string& s1, const std::string& s2);
 
 }	 // namespace utility
 
