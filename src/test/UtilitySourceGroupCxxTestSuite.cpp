@@ -168,6 +168,8 @@ TEST_CASE("CDB replace msvc arguments")
 		"/std:clatest", "-std:clatest",
 		"/std:c11", "-std:c99",
 
+		"/MD", "/MDd", "/MT", "/MTd",
+
 		"/SomeUnknownOption"
 	};
 
@@ -184,6 +186,8 @@ TEST_CASE("CDB replace msvc arguments")
 		"-std=c++11", "-std=c++14",
 		"-std=c17", "-std=c17",
 		"-std=c11", "-std=c99",
+
+		"-pthread", "-pthread", "-pthread", "-pthread"
 
 		// Removed: "/SomeUnknownOption"
 	};

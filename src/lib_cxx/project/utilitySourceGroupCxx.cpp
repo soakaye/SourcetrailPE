@@ -249,6 +249,16 @@ void replaceMsvcArguments(vector<string> *commandLineArguments)
 			*argument++ = "-std=c++"s + *argumentValue;
 		else if ((argumentValue = getArgumentValue(*argument, "/std:c"sv)) || (argumentValue = getArgumentValue(*argument, "-std:c"sv)))
 			*argument++ = "-std=c"s + *argumentValue;
+
+		// Multithread support:
+
+		else if (getArgumentValue(*argument, "/MD"sv) || getArgumentValue(*argument, "/MT"sv)
+			|| getArgumentValue(*argument, "-MD"sv) || getArgumentValue(*argument, "-MT"sv))
+		{
+			*argument++ = "-pthread"s;
+		}
+		// Remove unknown arguments:
+
 		else if (argument->starts_with('/'))
 			argument = commandLineArguments->erase(argument);
 		else
