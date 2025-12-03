@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include <QString>
 #include <QStringDecoder>
 #include <QStringEncoder>
 #include <QStringList>
