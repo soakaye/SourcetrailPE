@@ -507,6 +507,8 @@ vector<string> EclipseCompiler::getAvailableJavaStandards()
 	// See org.eclipse.jdt.core.JavaCore for the VERSION_?? values
 	// https://github.com/eclipse-jdt/eclipse.jdt.core/blob/master/org.eclipse.jdt.core/model/org/eclipse/jdt/core/JavaCore.java
 	const vector<string> availableStandards = {
+		"26",  // VERSION_26 = "26"
+		"25",  // VERSION_25 = "25"
 		"24",  // VERSION_24 = "24"
 		"23",  // VERSION_23 = "23"
 		"22",  // VERSION_22 = "22"
@@ -589,7 +591,7 @@ vector<string> WindowsSdk::getVersions()
 
 static optional<string> getArgumentValue(const string &argument, string_view argumentKey)
 {
-	return argument.starts_with(argumentKey) ? make_optional(argument.substr(argumentKey.length())) : nullopt;
+	return argument.starts_with(argumentKey) ? optional(argument.substr(argumentKey.length())) : nullopt;
 }
 
 void replaceMsvcArguments(vector<string> *commandLineArguments)

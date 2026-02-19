@@ -35,7 +35,7 @@ endif()
 
 # Project ----------------------------------------------------------------------
 
-project(Sourcetrail VERSION 2025.12.16 HOMEPAGE_URL "http://sourcetrail.de")
+project(Sourcetrail VERSION 2026.2.11 HOMEPAGE_URL "http://sourcetrail.de")
 cmake_print_variables(CMAKE_C_COMPILER)
 cmake_print_variables(CMAKE_CXX_COMPILER)
 
@@ -170,7 +170,7 @@ if (isVcpkgBuild)
 endif()
 
 set(BOOST_MIN_VERSION 1.83)
-set(BOOST_MAX_VERSION 1.90)
+set(BOOST_MAX_VERSION 1.91)
 
 find_package(Boost CONFIG REQUIRED 
 	COMPONENTS
@@ -440,15 +440,16 @@ add_subdirectory(src/indexer)
 
 configure_file(src/app/Sourcetrail.ico app/Sourcetrail.ico COPYONLY)
 if (UNIX)
-	configure_file(scripts/Sourcetrail.sh  app/Sourcetrail.sh COPYONLY)
-	configure_file(scripts/_gdbinit        app/.gdbinit COPYONLY)
+	configure_file(scripts/Sourcetrail.sh      app/Sourcetrail.sh COPYONLY)
+	configure_file(scripts/resetPreferences.sh app/resetPreferences.sh COPYONLY)
+	configure_file(scripts/_gdbinit            app/.gdbinit COPYONLY)
 endif()
 add_subdirectory(src/app)
 
 # Test ----------------------------------------------------------------------
 
 set(CATCH2_MIN_VERSION 3.7)
-set(CATCH2_MAX_VERSION 3.12)
+set(CATCH2_MAX_VERSION 3.13)
 
 if (BUILD_UNIT_TESTS_PACKAGE)
 	include(CTest)
