@@ -292,7 +292,15 @@ void SqliteStorage::enablePragmas() const
 {
 	executeStatement("PRAGMA FOREIGN_KEYS=ON;");
 
+	executeStatement("PRAGMA JOURNAL_MODE=WAL;");
 	executeStatement("PRAGMA SYNCHRONOUS=OFF;");
+	executeStatement("PRAGMA WAL_AUTOCHECKPOINT=10000;");
+
+	// These pragmas were tried, but didn't help much in reducing the indexing time on Windows:
+	//executeStatement("PRAGMA BUSY_TIMEOUT=5000;");
+	//executeStatement("PRAGMA CACHE_SIZE=-32768;");    // 32MB
+	//executeStatement("PRAGMA MMAP_SIZE=2147483648;"); // 2GB
+	//executeStatement("PRAGMA TEMP_STORE=MEMORY;");
 }
 
 void SqliteStorage::disablePragmas() const

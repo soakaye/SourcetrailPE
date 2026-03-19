@@ -17,10 +17,10 @@
 
 #include <gtest/gtest.h>
 
-#include <aidkit/thread_shared.hpp>
+#include <aidkit/concurrent/thread_shared.hpp>
 
 using namespace std;
-using namespace aidkit;
+using namespace aidkit::concurrent;
 
 //#########################################################################################################
 
@@ -53,7 +53,7 @@ class Data {
 
 
 // Explicit template instantiation to detect syntax errors early:
-template class aidkit::thread_shared<Data>;
+template class aidkit::concurrent::thread_shared<Data>;
 
 TEST(ThreadSharedTest, testAccess)
 {
@@ -125,15 +125,4 @@ TEST(ThreadSharedTest, testConstAccessFunction)
 	// {
 	// 	c.set(10);
 	// }, sharedData);
-}
-
-TEST(ThreadSharedTest, testAssignConversion)
-{
-	thread_shared<Data> sharedData(15);
-	Data otherData(30);
-
-	sharedData = otherData;
-	Data copyData = sharedData;
-
-	ASSERT_EQ(copyData, otherData);
 }

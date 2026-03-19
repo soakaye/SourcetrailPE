@@ -14,19 +14,19 @@ public:
 	MessageListener() = default;
 
 private:
-	std::string doGetType() const override
+	std::string getType() const final
 	{
 		return MessageType::getStaticType();
 	}
 
-	void doHandleMessageBase(MessageBase* message) override
+	void handleMessageBase(MessageBase* message) final
 	{
 		// if (message->isLogged())
 		// {
 		// 	LOG_INFO_STREAM_BARE(<< "handle " << message->str());
 		// }
 
-		handleMessage(dynamic_cast<MessageType*>(message));
+		handleMessage(static_cast<MessageType *>(message));
 	}
 
 	virtual void handleMessage(MessageType* message) = 0;
